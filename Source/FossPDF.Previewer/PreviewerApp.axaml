@@ -1,0 +1,9 @@
+﻿<Application x:Class="FossPDF.Previewer.PreviewerApp"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Name="FossPDF Document Preview"
+             RequestedThemeVariant="Dark">
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+</Application>
