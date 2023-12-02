@@ -53,6 +53,8 @@ namespace FossPDF.Drawing
             var letterSpacing = (TextStyle.LetterSpacing ?? 0) * (TextStyle.Size ?? 16); 
             
             var glyphs = new ShapedGlyph[length];
+            
+            bool isFirstGlyph = true;
 
             for (var i = 0; i < length; i++)
             {
@@ -63,19 +65,22 @@ namespace FossPDF.Drawing
                     lastCluster = glyphInfos[i].Cluster;
                     xOffset += letterSpacing;
                 }
+                
+                var hasExtents = ShaperFont.TryGetGlyphExtents(glyphInfos[i].Codepoint, out var extents);
 
                 glyphs[i] = new ShapedGlyph
                 {
                     Codepoint = (ushort)glyphInfos[i].Codepoint,
                     Position = new SKPoint(xOffset + glyphPositions[i].XOffset * scaleX, yOffset - glyphPositions[i].YOffset * scaleY),
-                    Width = glyphPositions[i].XAdvance * scaleX
-                };                
+                    Width = glyphPositions[i].XAdvance * scaleX,
+                    Extents = hasExtents ? extents : null
+                };
                 
                 xOffset += glyphPositions[i].XAdvance * scaleX;
                 yOffset += glyphPositions[i].YAdvance * scaleY;
             }
-            
-            return new TextShapingResult(buffer.Direction, glyphs);
+
+            return new TextShapingResult(buffer.Direction, glyphs, scaleX, scaleY);
         }
         
         void PopulateBufferWithText(Buffer buffer, string text)
@@ -101,6 +106,7 @@ namespace FossPDF.Drawing
         public ushort Codepoint;
         public SKPoint Position;
         public float Width;
+        public GlyphExtents? Extents;
     }
 
     internal struct DrawTextCommand
@@ -113,6 +119,8 @@ namespace FossPDF.Drawing
     {
         private Direction Direction { get; }
         private ShapedGlyph[] Glyphs { get; }
+        public float ScaleX { get; }
+        public float ScaleY { get; }
 
         public int Length => Glyphs.Length;
         
@@ -121,10 +129,12 @@ namespace FossPDF.Drawing
                 ? Glyphs[index] 
                 : Glyphs[Glyphs.Length - 1 - index];
 
-        public TextShapingResult(Direction direction, ShapedGlyph[] glyphs)
+        public TextShapingResult(Direction direction, ShapedGlyph[] glyphs, float scaleX, float scaleY)
         {
             Direction = direction;
             Glyphs = glyphs;
+            ScaleX = scaleX;
+            ScaleY = scaleY;
         }
 
         public int BreakText(int startIndex, float maxWidth)
@@ -214,11 +224,29 @@ namespace FossPDF.Drawing
                 ? startIndex
                 : endIndex;
             
-            return new DrawTextCommand
+            var cmd = new DrawTextCommand
             {
                 SkTextBlob = skTextBlobBuilder.Build(),
                 TextOffsetX = -this[firstVisualCharacterIndex].Position.X
             };
+
+            if (this[firstVisualCharacterIndex].Extents != null)
+            {
+                if (Direction == Direction.LeftToRight)
+                {
+                    cmd.TextOffsetX -= this[firstVisualCharacterIndex].Extents!.Value.XBearing*ScaleX;
+                }
+                else
+                {
+                    // this case is a right fucking pain
+                    // I'm not convinced XBearing _alone_ is the right thing to use in an RTL context
+                    // The RBearing will be part of the XAdvance, I THINK, but this will also include
+                    // the glyph itself
+                }
+                
+            }
+
+            return cmd;
         }
     }
     
