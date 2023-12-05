@@ -54,31 +54,72 @@ namespace FossPDF.Drawing
 
             var glyphs = new ShapedGlyph[length];
 
-            bool isFirstGlyph = true;
+            bool isFirstGlyphCluster = true;
+            
+            Console.WriteLine("Shaping text {0}", text);
 
             for (var i = 0; i < length; i++)
             {
+                var hasExtents = ShaperFont.TryGetGlyphExtents(glyphInfos[i].Codepoint, out var extents);
+                float? lBearing = hasExtents ? scaleX*extents.XBearing : null;
+                float? rBearing = hasExtents ? scaleX*(glyphPositions[i].XAdvance - (extents.Width + extents.XBearing)) : null;
+                var widthAdjustment = 0f;
+
+                if (isFirstGlyphCluster)
+                {
+                    xOffset -= lBearing ?? 0;
+                    widthAdjustment = lBearing ?? 0;
+                }
+                
                 // letter spacing should be applied between glyph clusters, not between individual glyphs,
                 // different cluster id indicates the end of the glyph cluster
                 if (lastCluster != glyphInfos[i].Cluster)
                 {
+                    isFirstGlyphCluster = false;
                     lastCluster = glyphInfos[i].Cluster;
                     xOffset += letterSpacing;
                 }
-
-                var hasExtents = ShaperFont.TryGetGlyphExtents(glyphInfos[i].Codepoint, out var extents);
-
+                bool isLastGlyphCluster = glyphInfos[i].Cluster == glyphInfos[length-1].Cluster;
+                
+                
+                if (isLastGlyphCluster)
+                {
+                    widthAdjustment += rBearing ?? 0;
+                }
+                
                 glyphs[i] = new ShapedGlyph
                 {
                     Codepoint = (ushort)glyphInfos[i].Codepoint,
                     Position = new SKPoint(xOffset + glyphPositions[i].XOffset * scaleX,
                         yOffset - glyphPositions[i].YOffset * scaleY),
-                    Width = glyphPositions[i].XAdvance * scaleX,
-                    Extents = hasExtents ? extents : null
+                    Width = glyphPositions[i].XAdvance * scaleX - widthAdjustment,
+                    LBearing = lBearing,
+                    RBearing = rBearing,
                 };
+                Console.WriteLine("\t"+text[i]);
+                Console.WriteLine(@"		Glyph index: {0}", glyphInfos[i].Codepoint.ToString("X"));
+                Console.WriteLine("\t"+"\tX-offset: {0} (scaled: {1})", glyphPositions[i].XOffset, glyphPositions[i].XOffset * scaleX);
+                Console.WriteLine("\t"+"\tY-offset: {0} (scaled: {1})", glyphPositions[i].YOffset, glyphPositions[i].YOffset * scaleY);
+                // isFirstGlyphCluster
+                Console.WriteLine("\t"+"\tIsFirstGlyphCluster: {0}", isFirstGlyphCluster);
+                // isLastGlyphCluster
+                Console.WriteLine("\t"+"\tIsLastGlyphCluster: {0}", isLastGlyphCluster);
+                // xOffset modifier
+                Console.WriteLine("\t"+"\tX-offset modifier [scaled]: {0}", xOffset);
+                Console.WriteLine("\t"+"\tX-advance: {0} (scaled: {1})", glyphPositions[i].XAdvance, glyphPositions[i].XAdvance * scaleX);
+                Console.WriteLine("\t"+"\tY-advance: {0} (scaled: {1})", glyphPositions[i].YAdvance, glyphPositions[i].YAdvance * scaleY);
+                if (hasExtents)
+                {
+                    Console.WriteLine("\t"+"\tExtents height: {0} (scaled: {1})", extents.Height, extents.Height * scaleY);
+                    Console.WriteLine("\t"+"\tExtents width: {0} (scaled: {1})", extents.Width, extents.Width * scaleX);
+                    // print lBearing and rBearing (both scaled)
+                    Console.WriteLine("\t"+"\tExtents lBearing [scaled] {0}", lBearing);
+                    Console.WriteLine("\t"+"\tExtents rBearing [scaled] {0}", rBearing);
+                }
 
                 xOffset += glyphPositions[i].XAdvance * scaleX;
                 yOffset += glyphPositions[i].YAdvance * scaleY;
+                
             }
 
             return new TextShapingResult(buffer.Direction, glyphs, scaleX, scaleY);
@@ -107,7 +148,8 @@ namespace FossPDF.Drawing
         public ushort Codepoint;
         public SKPoint Position;
         public float Width;
-        public GlyphExtents? Extents;
+        public float? RBearing { get; set; }
+        public float? LBearing { get; set; }
     }
 
     internal struct DrawTextCommand
@@ -192,11 +234,11 @@ namespace FossPDF.Drawing
             var end = this[endIndex];
 
             var adjustX = 0;
-            if (start.Extents != null)
-                adjustX = (int)(start.Extents!.Value.XBearing * ScaleX);
+            if (start.LBearing != null)
+                adjustX = (int)(start.LBearing);
             
-            if (end.Extents != null)
-                adjustX += (int)(end.Extents!.Value.XBearing * ScaleX);
+            if (end.RBearing != null)
+                adjustX += (int)(end.RBearing);
 
             return Direction switch
             {
@@ -232,6 +274,10 @@ namespace FossPDF.Drawing
             var firstVisualCharacterIndex = Direction == Direction.LeftToRight
                 ? startIndex
                 : endIndex;
+            
+            var lastVisualCharacterIndex = Direction == Direction.LeftToRight
+                ? endIndex
+                : startIndex;
 
             var cmd = new DrawTextCommand
             {
@@ -239,10 +285,8 @@ namespace FossPDF.Drawing
                 TextOffsetX = -this[firstVisualCharacterIndex].Position.X
             };
 
-            if (this[firstVisualCharacterIndex].Extents != null)
-            {
-                cmd.TextOffsetX -= this[firstVisualCharacterIndex].Extents!.Value.XBearing * ScaleX;
-            }
+            cmd.TextOffsetX = 0;
+
             
             return cmd;
         }
