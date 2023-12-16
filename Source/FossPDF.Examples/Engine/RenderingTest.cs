@@ -111,13 +111,15 @@ namespace FossPDF.Examples.Engine
         
         private void Render(IDocument document)
         {
+            var fileExplorer = PlatformUtils.PlatformUtils.GetFileExplorerForPlatform();
+
             if (ResultType == RenderingTestResult.Images)
             {
                 Func<int, string> fileNameSchema = i => $"{FileNamePrefix}-${i}.png";
                 document.GenerateImages(fileNameSchema);
                 
                 if (ShowResult && ShowingResultsEnabled)
-                    Process.Start("explorer", fileNameSchema(0));
+                    Process.Start(fileExplorer, fileNameSchema(0));
             }
 
             if (ResultType == RenderingTestResult.Pdf)
@@ -126,7 +128,7 @@ namespace FossPDF.Examples.Engine
                 document.GeneratePdf(fileName);
                 
                 if (ShowResult && ShowingResultsEnabled)
-                    Process.Start("explorer", fileName);
+                    Process.Start(fileExplorer, fileName);
             }
         }
     }

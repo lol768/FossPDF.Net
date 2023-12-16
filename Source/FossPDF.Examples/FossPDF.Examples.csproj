@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <IsPackable>false</IsPackable>
         <LangVersion>10</LangVersion>
     </PropertyGroup>
@@ -14,9 +14,12 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
         <PackageReference Include="SkiaSharp" Version="2.88.6" />
         <PackageReference Include="Svg.Skia" Version="1.0.0.3" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
+        <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\FossPDF.PlatformUtils\FossPDF.PlatformUtils.csproj" />
       <ProjectReference Include="..\FossPDF\FossPDF.csproj" />
     </ItemGroup>
 

@@ -40,7 +40,7 @@ namespace FossPDF.Examples
         {
             var path = "example.pdf";
             new ContinuousPageDocument().GeneratePdf(path);
-            Process.Start("explorer", path);
+            Process.Start(PlatformUtils.PlatformUtils.GetFileExplorerForPlatform(), path);
         }
     }
 }

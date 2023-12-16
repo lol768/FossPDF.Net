@@ -47,7 +47,7 @@ namespace FossPDF.Examples
                 })
                 .GeneratePdf("hello.pdf");
 
-            Process.Start("explorer.exe", "hello.pdf");
+            Process.Start(PlatformUtils.PlatformUtils.GetFileExplorerForPlatform(), "hello.pdf");
         }
     }
 }

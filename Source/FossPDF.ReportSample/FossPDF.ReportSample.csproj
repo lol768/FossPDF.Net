@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <IsPackable>false</IsPackable>
         <LangVersion>8</LangVersion>
         <RootNamespace>FossPDF.ReportSample</RootNamespace>
@@ -22,6 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\FossPDF.PlatformUtils\FossPDF.PlatformUtils.csproj" />
       <ProjectReference Include="..\FossPDF\FossPDF.csproj" />
     </ItemGroup>
 

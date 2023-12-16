@@ -39,9 +39,13 @@ namespace FossPDF.Elements.Text.Items
                 IsFirstElementInBlock = request.IsFirstElementInBlock,
                 IsFirstElementInLine = request.IsFirstElementInLine
             };
-             
+
             if (!MeasureCache.ContainsKey(cacheKey))
+            {
+                Console.WriteLine("Cache miss, measuring text \"" + Text + "\"" + request.StartIndex + " " + request.AvailableWidth + " " + request.IsFirstElementInBlock + " " + request.IsFirstElementInLine);
                 MeasureCache[cacheKey] = MeasureWithoutCache(request);
+                Console.WriteLine("\tGot result with width " + MeasureCache[cacheKey]?.Width);
+            }
             
             return MeasureCache[cacheKey];
         }

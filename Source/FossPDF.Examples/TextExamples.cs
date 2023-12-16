@@ -19,7 +19,6 @@ namespace FossPDF.Examples
             RenderingTest
                 .Create()
                 .PageSize(500, 100)
-                
                 .ProduceImages()
                 .ShowResults()
                 .Render(container =>
@@ -32,14 +31,13 @@ namespace FossPDF.Examples
                         .Text(Placeholders.Paragraph());
                 });
         }
-        
+
         [Test]
         public void SimpleTextBlock()
         {
             RenderingTest
                 .Create()
                 .PageSize(600, 300)
-                
                 .ProduceImages()
                 .ShowResults()
                 .Render(container =>
@@ -92,7 +90,7 @@ namespace FossPDF.Examples
                         });
                 });
         }
-        
+
         [Test]
         public void LineHeight()
         {
@@ -150,17 +148,16 @@ namespace FossPDF.Examples
                                     .Column(nestedColumn =>
                                     {
                                         nestedColumn.Item()
-                                                    .Text(paragraph)
-                                                    .FontSize(16)
-                                                    .LetterSpacing(spacing);
+                                            .Text(paragraph)
+                                            .FontSize(16)
+                                            .LetterSpacing(spacing);
 
                                         nestedColumn.Item()
-                                                    .Text($"Letter spacing of {spacing} em")
-                                                    .FontSize(10)
-                                                    .Italic()
-                                                    .FontColor(Colors.Blue.Medium);
+                                            .Text($"Letter spacing of {spacing} em")
+                                            .FontSize(10)
+                                            .Italic()
+                                            .FontColor(Colors.Blue.Medium);
                                     });
-                                
                             }
                         });
                 });
@@ -185,23 +182,23 @@ namespace FossPDF.Examples
                             foreach (var spacing in letterSpacing)
                             {
                                 column
-                                   .Item()
-                                   .Border(1)
-                                   .Padding(10)
-                                   .Column(nestedColumn =>
-                                   {
-                                       nestedColumn.Item()
-                                                   .Text(paragraph)
-                                                   .FontSize(16)
-                                                   .FontFamily(Fonts.Calibri)
-                                                   .LetterSpacing(spacing);
+                                    .Item()
+                                    .Border(1)
+                                    .Padding(10)
+                                    .Column(nestedColumn =>
+                                    {
+                                        nestedColumn.Item()
+                                            .Text(paragraph)
+                                            .FontSize(16)
+                                            .FontFamily(Fonts.Calibri)
+                                            .LetterSpacing(spacing);
 
-                                       nestedColumn.Item()
-                                                   .Text($"Letter spacing of {spacing} em")
-                                                   .FontSize(10)
-                                                   .Italic()
-                                                   .FontColor(Colors.Blue.Medium);
-                                   });
+                                        nestedColumn.Item()
+                                            .Text($"Letter spacing of {spacing} em")
+                                            .FontSize(10)
+                                            .Italic()
+                                            .FontColor(Colors.Blue.Medium);
+                                    });
                             }
                         });
                 });
@@ -223,27 +220,26 @@ namespace FossPDF.Examples
                         .Column(column =>
                         {
                             var letterSpacing = new[] { 0f, 0.5f };
-                            
-                            
-                            
-                            var paragraph = "Ţ̴̡̧̤̮̺̤̗͎̱̹͙͎͖͂̿̓́̉̊̀̍͜h̵̞̘͇̾̎̏̅į̵̹̖͔͉̰̎̉̄̐̏͑͂̅̃̃͘͝s̷͓͉̭̭̯̬̥̻̰̩̦̑̀̀͌́̒̍̒̌̇͛̀͛́̎ ̷̡̡̟͕̳̺̝̼͇͔̬̟̖͍̈́̽͜͝͝i̶͔͚̟̊̐͛́͛̄̌ṡ̸̡̤̪͙͍̥͙̟̼̝̰̥͈̿̓̄̿̓͠ ̶̢̦̙͍̯̖̱̰̯͕͔͎̯̝̎͑t̸͖̲̱̼̎͐̎̉̾̎̾̌̅̔̏͘ȩ̶̝̫̙͓̙̣̔̀̌̔̋̂̑̈́̏̀̈͘̕͜͝s̸̫̝̮̻̼͐̅̄̎̎̑͝ț̷̨̢̨̻͈̮̞̆͗̓͊̃̌͂̑̉̕̕͜͝͝";
 
-                            
-                            
+
+                            var paragraph =
+                                "Ţ̴̡̧̤̮̺̤̗͎̱̹͙͎͖͂̿̓́̉̊̀̍͜h̵̞̘͇̾̎̏̅į̵̹̖͔͉̰̎̉̄̐̏͑͂̅̃̃͘͝s̷͓͉̭̭̯̬̥̻̰̩̦̑̀̀͌́̒̍̒̌̇͛̀͛́̎ ̷̡̡̟͕̳̺̝̼͇͔̬̟̖͍̈́̽͜͝͝i̶͔͚̟̊̐͛́͛̄̌ṡ̸̡̤̪͙͍̥͙̟̼̝̰̥͈̿̓̄̿̓͠ ̶̢̦̙͍̯̖̱̰̯͕͔͎̯̝̎͑t̸͖̲̱̼̎͐̎̉̾̎̾̌̅̔̏͘ȩ̶̝̫̙͓̙̣̔̀̌̔̋̂̑̈́̏̀̈͘̕͜͝s̸̫̝̮̻̼͐̅̄̎̎̑͝ț̷̨̢̨̻͈̮̞̆͗̓͊̃̌͂̑̉̕̕͜͝͝";
+
+
                             foreach (var spacing in letterSpacing)
                             {
                                 column.Item()
-                                      .Text($"Letter spacing of {spacing} em")
-                                      .FontSize(10)
-                                      .Italic()
-                                      .FontColor(Colors.Blue.Medium);
+                                    .Text($"Letter spacing of {spacing} em")
+                                    .FontSize(10)
+                                    .Italic()
+                                    .FontColor(Colors.Blue.Medium);
 
                                 column.Item()
-                                      .PaddingVertical(50)
-                                      .Text(paragraph)
-                                      .FontSize(16)
-                                      .FontFamily(Fonts.Calibri)
-                                      .LetterSpacing(spacing);
+                                    .PaddingVertical(50)
+                                    .Text(paragraph)
+                                    .FontSize(16)
+                                    .FontFamily(Fonts.Calibri)
+                                    .LetterSpacing(spacing);
                             }
                         });
                 });
@@ -276,7 +272,7 @@ namespace FossPDF.Examples
                             text.Span(" is the equation of mass–energy equivalence.");
 
                             text.EmptyLine();
-                            
+
                             text.Span("H").Style(highlight);
                             text.Span("2").Subscript().Style(highlight);
                             text.Span("O").Style(highlight);
@@ -289,41 +285,41 @@ namespace FossPDF.Examples
         public void SuperscriptSubscript_Effects()
         {
             RenderingTest
-               .Create()
-               .PageSize(800, 400)
-               .ProduceImages()
-               .ShowResults()
-               .Render(container =>
-               {
-                   container
+                .Create()
+                .PageSize(800, 400)
+                .ProduceImages()
+                .ShowResults()
+                .Render(container =>
+                {
+                    container
                         .Padding(25)
                         .DefaultTextStyle(x => x.FontSize(30))
                         .Column(column =>
                         {
                             column.Spacing(25);
-                            
+
                             column.Item().Text(text =>
                             {
                                 text.DefaultTextStyle(x => x.Underline());
-                                
+
                                 text.Span("Underline of the superscript (E = mc");
                                 text.Span("2").Superscript();
                                 text.Span(") should be at the same height as for normal text.");
                             });
-                            
+
                             column.Item().Text(text =>
                             {
                                 text.DefaultTextStyle(x => x.Underline());
-                                
+
                                 text.Span("Underline of the subscript(H");
                                 text.Span("2").Subscript();
                                 text.Span("O) should be slightly lower than a normal text.");
                             });
-                            
+
                             column.Item().Text(text =>
                             {
                                 text.DefaultTextStyle(x => x.Strikethrough());
-                                
+
                                 text.Span("Strikethrough of both superscript (E=mc");
                                 text.Span("2").Superscript();
                                 text.Span(") and subscript(H");
@@ -331,7 +327,7 @@ namespace FossPDF.Examples
                                 text.Span("O) should be visible in the middle of the text.");
                             });
                         });
-               });
+                });
         }
 
         [Test]
@@ -349,13 +345,10 @@ namespace FossPDF.Examples
                         .MinimalBox()
                         .Border(1)
                         .Padding(10)
-                        .Text(text =>
-                        {
-                            text.Line(Placeholders.Paragraph());
-                        });
+                        .Text(text => { text.Line(Placeholders.Paragraph()); });
                 });
         }
-        
+
         [Test]
         public void CustomElement()
         {
@@ -375,18 +368,18 @@ namespace FossPDF.Examples
                         {
                             text.DefaultTextStyle(TextStyle.Default.FontSize(20));
                             text.Span("This is a random image aligned to the baseline: ");
-                            
+
                             text.Element()
                                 .PaddingBottom(-6)
                                 .Height(24)
                                 .Width(48)
                                 .Image(Placeholders.Image);
-                            
+
                             text.Span(".");
                         });
                 });
         }
-        
+
         [Test]
         public void TextElements()
         {
@@ -412,11 +405,13 @@ namespace FossPDF.Examples
 
                             text.Line(Placeholders.LoremIpsum());
 
-                            text.Span($"This is target text that should show up. {DateTime.UtcNow:T} > This is a short sentence that will be wrapped into second line hopefully, right? <").Underline();
+                            text.Span(
+                                    $"This is target text that should show up. {DateTime.UtcNow:T} > This is a short sentence that will be wrapped into second line hopefully, right? <")
+                                .Underline();
                         });
                 });
         }
-        
+
         [Test]
         public void Textcolumn()
         {
@@ -439,7 +434,7 @@ namespace FossPDF.Examples
                             text.DefaultTextStyle(TextStyle.Default);
                             text.AlignLeft();
                             text.ParagraphSpacing(10);
-                            
+
                             foreach (var i in Enumerable.Range(1, 100))
                                 text.Line($"{i}: {Placeholders.Paragraph()}");
                         });
@@ -466,7 +461,7 @@ namespace FossPDF.Examples
                         .Text(text =>
                         {
                             text.DefaultTextStyle(x => x.Bold());
-                            
+
                             text.DefaultTextStyle(TextStyle.Default);
                             text.AlignLeft();
                             text.ParagraphSpacing(10);
@@ -500,12 +495,12 @@ namespace FossPDF.Examples
                             text.EmptyLine();
 
                             text.Span(Placeholders.Paragraphs());
-                            
-                            
+
+
                             text.EmptyLine();
 
                             text.Span(Placeholders.Paragraphs()).Italic();
-                            
+
                             text.Line("This is target text that does not show up. " + Placeholders.Paragraph());
                         });
                 });
@@ -538,35 +533,35 @@ namespace FossPDF.Examples
                             text.Span("this is a bold text, ").Bold();
                             text.Span("this is a red and underlined text, ").FontColor(Colors.Red.Medium).Underline();
                             text.Span("and this is slightly bigger text.").FontSize(16);
-                            
+
                             text.Span("The new text element also supports injecting custom content between words: ");
                             text.Element().PaddingBottom(-4).Height(16).Width(32).Image(Placeholders.Image);
                             text.Span(".");
-                            
+
                             text.EmptyLine();
-                            
+
                             foreach (var i in Enumerable.Range(1, 100))
                             {
                                 text.Line($"{i}: {Placeholders.Paragraph()}");
 
                                 text.Hyperlink("Please visit FossPDF website. ", "https://www.FossPDF.com");
-                                
+
                                 text.Span("This is page number ");
                                 text.CurrentPageNumber();
                                 text.Span(" out of ");
                                 text.TotalPages();
-                                
+
                                 text.EmptyLine();
                             }
                         });
                 });
         }
-        
+
         [Test]
         public void MeasureIssueWhenSpaceAtLineEnd()
         {
             // issue 135
-            
+
             RenderingTest
                 .Create()
                 .ProduceImages()
@@ -580,16 +575,19 @@ namespace FossPDF.Examples
 
                         page.Size(PageSizes.A4);
 
-                        page.Content().Text("This is a specially crafted sentence with a specially chosen length for demonstration of the bug that occurs ;;;;;. ").FontSize(11).BackgroundColor(Colors.Red.Lighten3);
+                        page.Content()
+                            .Text(
+                                "This is a specially crafted sentence with a specially chosen length for demonstration of the bug that occurs ;;;;;. ")
+                            .FontSize(11).BackgroundColor(Colors.Red.Lighten3);
                     });
                 });
         }
-        
+
         [Test]
         public void EmptyText()
         {
             // issue 135
-            
+
             RenderingTest
                 .Create()
                 .ProduceImages()
@@ -607,12 +605,12 @@ namespace FossPDF.Examples
                     });
                 });
         }
-        
+
         [Test]
         public void Whitespaces()
         {
             // issue 135
-            
+
             RenderingTest
                 .Create()
                 .ProduceImages()
@@ -630,7 +628,7 @@ namespace FossPDF.Examples
                     });
                 });
         }
-        
+
         [Test]
         public void DrawingNullTextShouldNotThrowException()
         {
@@ -649,7 +647,7 @@ namespace FossPDF.Examples
 
                         page.Content().Column(column =>
                         {
-                            column.Item().Text((string) null);
+                            column.Item().Text((string)null);
 
                             column.Item().Text(text =>
                             {
@@ -662,7 +660,7 @@ namespace FossPDF.Examples
                     });
                 });
         }
-        
+
         [Test]
         public void BreakingLongWord()
         {
@@ -681,27 +679,28 @@ namespace FossPDF.Examples
 
                         page.Content().Column(column =>
                         {
-                            column.Item().Text((string) null);
+                            column.Item().Text((string)null);
 
                             column.Item().Text(text =>
                             {
                                 text.DefaultTextStyle(x => x.BackgroundColor(Colors.Red.Lighten3).FontSize(24));
-                                
+
                                 text.Span("       " + Placeholders.LoremIpsum());
-                                text.Span(" 012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789         ").WrapAnywhere();
+                                text.Span(
+                                        " 012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789         ")
+                                    .WrapAnywhere();
                             });
                         });
                     });
                 });
         }
-        
+
         [Test]
         public void TextShaping_Unicode()
         {
             RenderingTest
                 .Create()
                 .PageSize(600, 100)
-                
                 .ProduceImages()
                 .ShowResults()
                 .Render(container =>
@@ -713,25 +712,26 @@ namespace FossPDF.Examples
                         .Text(text =>
                         {
                             text.DefaultTextStyle(TextStyle.Default.FontSize(20));
-                            
+
                             text.Span("Complex Unicode structure: ");
-                            
-                            
-                            text.Span("T̶̖̔͆͆̽̔ḩ̷̼̫̐̈́̀͜͝͝ì̶͇̤͓̱̣͇͓͉̎s̵̡̟̹͍̜͉̗̾͛̈̐́͋͂͝͠ͅ ̴̨͙͍͇̭̒͗̀́͝ì̷̡̺͉̼̏̏̉̌͝s̷͍͙̗̰̖͙̈̑̂̔͑͊̌̓̊̇͜ ̶̛̼͚͊̅͘ṭ̷̨̘̣̙̖͉͌̏̂̅͑̄̽̕͝ȅ̶̲̲̙̭͈̬̣͔̝͔̈́͝s̸̢̯̪̫͓̭̮̓̀͆͜ț̸̢͉̞̥̤̏̌̓͝").FontFamily(Fonts.Calibri).FontColor(Colors.Red.Medium);
-                            
-                            
+
+
+                            text.Span(
+                                    "T̶̖̔͆͆̽̔ḩ̷̼̫̐̈́̀͜͝͝ì̶͇̤͓̱̣͇͓͉̎s̵̡̟̹͍̜͉̗̾͛̈̐́͋͂͝͠ͅ ̴̨͙͍͇̭̒͗̀́͝ì̷̡̺͉̼̏̏̉̌͝s̷͍͙̗̰̖͙̈̑̂̔͑͊̌̓̊̇͜ ̶̛̼͚͊̅͘ṭ̷̨̘̣̙̖͉͌̏̂̅͑̄̽̕͝ȅ̶̲̲̙̭͈̬̣͔̝͔̈́͝s̸̢̯̪̫͓̭̮̓̀͆͜ț̸̢͉̞̥̤̏̌̓͝")
+                                .FontFamily(Fonts.Calibri).FontColor(Colors.Red.Medium);
+
+
                             text.Span(".");
                         });
                 });
         }
-        
+
         [Test]
         public void TextShaping_Arabic()
         {
             RenderingTest
                 .Create()
                 .PageSize(250, 100)
-                
                 .ProduceImages()
                 .ShowResults()
                 .Render(container =>
@@ -745,7 +745,7 @@ namespace FossPDF.Examples
                         .FontSize(30);
                 });
         }
-        
+
         [Test]
         public void FontFallback()
         {
@@ -769,11 +769,11 @@ namespace FossPDF.Examples
                         {
                             t.Line("This is normal text.");
                             t.EmptyLine();
-                            
+
                             t.Line("Following line should use font fallback:");
                             t.Line("中文文本");
                             t.EmptyLine();
-                            
+
                             t.Line("The following line contains a mix of known and unknown characters.");
                             t.Line("Mixed line: This 中文 is 文文 a mixed 本 本 line 本 中文文本!");
                             t.EmptyLine();
@@ -783,12 +783,12 @@ namespace FossPDF.Examples
                     });
                 });
         }
-        
+
         [Test]
         public void WordWrappingStability()
         {
             // instruction: check if any characters repeat when performing the word-wrapping algorithm
-            
+
             RenderingTest
                 .Create()
                 .PageSize(PageSizes.A4)
@@ -797,7 +797,7 @@ namespace FossPDF.Examples
                 .Render(container =>
                 {
                     var text = "Lorem ipsum dolor sit amet consectetuer";
-                    
+
                     container
                         .Padding(20)
                         .Column(column =>
@@ -815,7 +815,7 @@ namespace FossPDF.Examples
                         });
                 });
         }
-        
+
         [Test]
         public void AdvancedLanguagesSupport()
         {
@@ -826,8 +826,9 @@ namespace FossPDF.Examples
                 .ShowResults()
                 .Render(container =>
                 {
-                    var text = "في المعلوماتية أو الرياضيات، خوارزمية الترتيب هي خوارزمية تمكن من تنظيم مجموعة عناصر حسب ترتيب محدد.";
-                    
+                    var text =
+                        "في المعلوماتية أو الرياضيات، خوارزمية الترتيب هي خوارزمية تمكن من تنظيم مجموعة عناصر حسب ترتيب محدد.";
+
                     container
                         .Padding(20)
                         .ContentFromRightToLeft()
@@ -836,7 +837,7 @@ namespace FossPDF.Examples
                         .FontSize(22);
                 });
         }
-        
+
         [Test]
         public void WordWrappingWhenRightToLeft()
         {
@@ -847,15 +848,16 @@ namespace FossPDF.Examples
                 .ShowResults()
                 .Render(container =>
                 {
-                    var text = "في المعلوماتية أو الرياضيات، خوارزمية الترتيب هي خوارزمية تمكن من تنظيم مجموعة عناصر حسب ترتيب محدد.";
-                    
+                    var text =
+                        "في المعلوماتية أو الرياضيات، خوارزمية الترتيب هي خوارزمية تمكن من تنظيم مجموعة عناصر حسب ترتيب محدد.";
+
                     container
                         .Padding(25)
                         .ContentFromRightToLeft()
                         .Column(column =>
                         {
                             column.Spacing(20);
-                            
+
                             foreach (var size in new[] { 36, 34, 32, 30, 15 })
                             {
                                 column
@@ -872,7 +874,7 @@ namespace FossPDF.Examples
                         });
                 });
         }
-        
+
         [Test]
         public void ForcingTextDirection()
         {
@@ -889,15 +891,15 @@ namespace FossPDF.Examples
                         .Column(column =>
                         {
                             column.Spacing(10);
-                            
+
                             var word = "الجوريتم";
                             var definition = "algorithm in Arabic";
 
                             var text = $"{word} - {definition}";
-                            
+
                             // text direction is automatically detected using the first word
                             column.Item().Text(text);
-                            
+
                             // it is possible to force specific content direction
                             column.Item().Text(text).DirectionFromLeftToRight();
                             column.Item().Text(text).DirectionFromRightToLeft();
@@ -912,7 +914,7 @@ namespace FossPDF.Examples
                         });
                 });
         }
-        
+
         [Test]
         public void DetectSpanPositionExample()
         {
@@ -924,18 +926,18 @@ namespace FossPDF.Examples
                 .Render(container =>
                 {
                     var fontSize = 20;
-                    
+
                     var paint = new SKPaint
                     {
                         Color = SKColors.Red,
                         TextSize = fontSize
                     };
-                    
+
                     var fontMetrics = paint.FontMetrics;
 
                     var start = 0f;
                     var end = 0f;
-                    
+
                     // corner case: what if text is paged? clamp start and end?
 
                     container
@@ -947,34 +949,38 @@ namespace FossPDF.Examples
                             {
                                 text.Span(Placeholders.Paragraph());
                                 text.Span(" - ");
-                                
+
                                 // record start
                                 text.Element().Width(0).Height(0)
-                                    .Canvas((canvas, size) => start = canvas.TotalMatrix.TransY / canvas.TotalMatrix.ScaleY);
-                                
+                                    .Canvas((canvas, size) =>
+                                        start = canvas.TotalMatrix.TransY / canvas.TotalMatrix.ScaleY);
+
                                 text.Span(Placeholders.LoremIpsum()).BackgroundColor(Colors.Red.Lighten4);
-                                
+
                                 // record end
                                 text.Element().Width(0).Height(0)
-                                    .Canvas((canvas, size) => end = canvas.TotalMatrix.TransY / canvas.TotalMatrix.ScaleY);
-                            
+                                    .Canvas((canvas, size) =>
+                                        end = canvas.TotalMatrix.TransY / canvas.TotalMatrix.ScaleY);
+
                                 text.Span(" - ");
                                 text.Span(Placeholders.Paragraph());
                             });
-                            
+
                             layers.Layer().Canvas((canvas, size) =>
                             {
                                 canvas.Save();
-      
-                                canvas.Translate(-canvas.TotalMatrix.TransX / canvas.TotalMatrix.ScaleX, -canvas.TotalMatrix.TransY / canvas.TotalMatrix.ScaleY);
-                                canvas.DrawRect(10, start + fontMetrics.Ascent, 5, end - start + (fontMetrics.Bottom - fontMetrics.Ascent), paint);
-                                
+
+                                canvas.Translate(-canvas.TotalMatrix.TransX / canvas.TotalMatrix.ScaleX,
+                                    -canvas.TotalMatrix.TransY / canvas.TotalMatrix.ScaleY);
+                                canvas.DrawRect(10, start + fontMetrics.Ascent, 5,
+                                    end - start + (fontMetrics.Bottom - fontMetrics.Ascent), paint);
+
                                 canvas.Restore();
                             });
                         });
                 });
         }
-        
+
         [Test]
         public void InconsistentLineHeightWhenUsingNewLineTest()
         {
@@ -991,22 +997,22 @@ namespace FossPDF.Examples
                         .Text(text =>
                         {
                             text.DefaultTextStyle(x => x.FontSize(16));
-                            
+
                             text.Line(Placeholders.Paragraph());
                             text.Line("");
                             text.Line(Placeholders.Paragraph());
-                            
+
                             text.Line(Placeholders.Label()).FontSize(48);
-                            
+
                             text.Line(Placeholders.Paragraph());
                             text.Line("");
                             text.Line(Placeholders.Paragraph());
                         });
                 });
         }
-        
+
         [Test]
-         public void FontFallback_Nested()
+        public void FontFallback_Nested()
         {
             RenderingTest
                 .Create()
@@ -1019,7 +1025,7 @@ namespace FossPDF.Examples
                         page.Margin(50);
                         page.PageColor(Colors.White);
                         page.Size(PageSizes.A5.Landscape());
-                        
+
                         page.DefaultTextStyle(x => x
                             .FontSize(24)
                             .Bold()
@@ -1032,9 +1038,105 @@ namespace FossPDF.Examples
                         page.Content().Text(text =>
                         {
                             text.Line("Default times new roman 中文文本 text.");
-                            text.Line("Normal weight and green 中文文本 text.").NormalWeight().BackgroundColor(Colors.Green.Lighten2);
+                            text.Line("Normal weight and green 中文文本 text.").NormalWeight()
+                                .BackgroundColor(Colors.Green.Lighten2);
                             text.Line("Strikethrough without underline 中文文本 text.").Strikethrough().Underline(false);
                             text.Line("Lato italic 中文文本 text.").FontFamily("Lato").Italic();
+                        });
+                    });
+                });
+        }
+
+        [Test]
+        public void TextMeasurementWidths()
+        {
+            // We'll use the ATOC Rail Alphabet font for this test
+            RenderingTest
+                .Create()
+                .ProducePdf()
+                .ShowResults()
+                .RenderDocument(container =>
+                {
+                    container.Page(page =>
+                    {
+                        page.Margin(1);
+                        page.PageColor(Colors.White);
+                        page.Size(100, 100);
+
+                        page.DefaultTextStyle(x => x
+                            .FontSize(24)
+                            .FontFamily("ATOC Rail Alphabet"));
+
+                        page.Content().Column(c =>
+                        {
+                            c.Item().Text(text =>
+                            {
+                                text.DefaultTextStyle(s => s.BackgroundColor("#f00"));
+                                text.Line("COF4");
+                            });
+
+                            c.Item().Text(text =>
+                            {
+                                text.DefaultTextStyle(s => s.BackgroundColor("#f00"));
+                                text.Line("HHH");
+                            });
+                        });
+                    });
+                });
+        }
+
+        [Test]
+        public void TestAlignText()
+        {
+            // We'll use the ATOC Rail Alphabet font for this test
+            RenderingTest
+                .Create()
+                .ProducePdf()
+                .ShowResults()
+                .RenderDocument(container =>
+                {
+                    container.Page(page =>
+                    {
+                        page.Margin(1);
+                        page.PageColor(Colors.White);
+                        page.Size(60, 400, Unit.Millimetre);
+
+                        page.DefaultTextStyle(x => x
+                            .FontSize(10)
+                            .FontFamily("ATOC Rail Alphabet"));
+
+                        page.Header().MinimalBox().Background("#fff8f2").Border(1).BorderColor("#8c8c8c").Column((c) =>
+                        {
+                            c.Item().PaddingTop(2, Unit.Millimetre).AlignCenter().Background("#fff").Row(a =>
+                            {
+                                a.ConstantItem(35, Unit.Millimetre).Border(1).BorderColor("#8c8c8c")
+                                    .Height(34, Unit.Millimetre)
+                                    .Width(35, Unit.Millimetre).AlignCenter().Background("#aaf").Column(c =>
+                                    {
+                                        c.Item().PaddingTop(1, Unit.Millimetre).MinimalBox().Width(28, Unit.Millimetre)
+                                            .Height(28, Unit.Millimetre).Background("#fff").Canvas((canvas, space) =>
+                                            {
+
+                                                // set up the SKPaint
+                                                var paint = new SKPaint
+                                                {
+                                                    Style = SKPaintStyle.Fill,
+                                                    Color = SKColors.Black,
+                                                };
+
+                                                // we need a quiet area around the barcode, so drawRect in the entire space
+                                                // and then draw the barcode over the top
+                                                canvas.DrawRect(0, 0, space.Width, space.Height, paint);
+                                            });
+
+
+                                        // UTN
+                                        
+                                        c.Item().AlignCenter().TranslateY(0.40f, Unit.Millimetre)
+                                            .DefaultTextStyle(x => x.FontSize(10).FontFamily("ATOC Rail Alphabet").BackgroundColor("#eef"))
+                                            .Text("AA123456789");
+                                    });
+                            });
                         });
                     });
                 });
