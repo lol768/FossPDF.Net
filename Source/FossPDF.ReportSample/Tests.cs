@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using NUnit.Framework;
-using FossPDF.Drawing;
 using FossPDF.Fluent;
-using FossPDF.Infrastructure;
 using FossPDF.ReportSample.Layouts;
 
 namespace FossPDF.ReportSample
@@ -28,7 +25,7 @@ namespace FossPDF.ReportSample
         
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"test_result.pdf");
             Report.GeneratePdf(path);
-            Process.Start("explorer.exe", path);
+            Process.Start(PlatformUtils.PlatformUtils.GetFileExplorerForPlatform(), path);
         }
         
         [Test] 
@@ -36,7 +33,7 @@ namespace FossPDF.ReportSample
         {
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"test_result.xps");
             Report.GenerateXps(path);
-            Process.Start("explorer.exe", path);
+            Process.Start(PlatformUtils.PlatformUtils.GetFileExplorerForPlatform(), path);
         }
     }
 }
