@@ -22,11 +22,27 @@ namespace FossPDF.Drawing
         private static readonly ConcurrentDictionary<TextStyle, Font> ShaperFonts = new();
         private static readonly ConcurrentDictionary<TextStyle, SKFont> Fonts = new();
         private static readonly ConcurrentDictionary<TextStyle, TextShaper> TextShapers = new();
+        private static Action<IEnumerable<FontToBeSubset>>? _subsetCallback;
 
         static FontManager()
         {
             NativeDependencyCompatibilityChecker.Test();
             RegisterLibraryDefaultFonts();
+        }
+        
+        public static void ClearCacheReadyForSubsets()
+        {
+            StyleSets.Clear();
+            FontMetrics.Clear();
+            FontPaints.Clear();
+            ShaperFonts.Clear();
+            Fonts.Clear();
+            TextShapers.Clear();
+        }
+
+        public static void RegisterSubsetCallback(Action<IEnumerable<FontToBeSubset>> callback)
+        {
+            _subsetCallback = callback;
         }
         
         private static void RegisterFontType(SKData fontData, string? customName = null)
@@ -56,6 +72,11 @@ namespace FossPDF.Drawing
             using var fontData = SKData.Create(stream);
             RegisterFontType(fontData);
             RegisterFontType(fontData, customName: fontName);
+        }
+
+        internal static void FireSubsetCallback(IEnumerable<FontToBeSubset> input)
+        {
+            _subsetCallback?.Invoke(input);
         }
 
         public static void RegisterFont(Stream stream)

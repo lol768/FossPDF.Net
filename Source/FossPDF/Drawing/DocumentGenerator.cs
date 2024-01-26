@@ -10,6 +10,8 @@ using FossPDF.Elements.Text.Items;
 using FossPDF.Fluent;
 using FossPDF.Helpers;
 using FossPDF.Infrastructure;
+using HarfBuzzSharp;
+using SkiaSharp;
 
 namespace FossPDF.Drawing
 {
@@ -79,6 +81,46 @@ namespace FossPDF.Drawing
 
             var pageContext = new PageContext();
             RenderPass(pageContext, new FreeCanvas(), content, debuggingState);
+            
+            // interrogate all TextBlockSpans
+            var allMyFuckingGlyphs = new Dictionary<Font, HashSet<uint>>();
+            var typeFaceToGlyphs = new Dictionary<SKTypeface, HashSet<uint>>();
+
+            content.VisitChildren(el =>
+            {
+                if (el is not TextBlock tb) return;
+                foreach (var textBlockItem in tb.Items)
+                {
+                    if (textBlockItem is not TextBlockSpan span) continue;
+                    var glyphCodepoints = span.GetGlyphCodepoints();
+                    if (glyphCodepoints == null) continue;
+                   
+                    var shaperFont = span.Style.ToShaperFont();
+                    var existingList = allMyFuckingGlyphs.TryGetValue(shaperFont, out var glyphList)
+                        ? glyphList
+                        : new HashSet<uint>();
+                    foreach (var glyphCodepoint in glyphCodepoints)
+                    {
+                        existingList.Add(glyphCodepoint);
+                    }
+                    
+                    var existingTfList = typeFaceToGlyphs.TryGetValue(span.Style.ToFont().Typeface, out var glyphListTf)
+                        ? glyphListTf
+                        : new HashSet<uint>();
+                    foreach (var glyphCodepoint in glyphCodepoints)
+                    {
+                        existingTfList.Add(glyphCodepoint);
+                    }
+
+                    typeFaceToGlyphs[span.Style.ToFont().Typeface] = existingTfList;
+                    span.ClearTextShapingResult();
+
+                    allMyFuckingGlyphs[shaperFont] = existingList;
+                }
+            });
+            
+            var reqs = typeFaceToGlyphs.Select(entry => new FontToBeSubset { Glyphs = entry.Value, Typeface = entry.Key }).ToList();
+            FontManager.FireSubsetCallback(reqs);
             RenderPass(pageContext, canvas, content, debuggingState);
         }
         
@@ -225,5 +267,6 @@ namespace FossPDF.Drawing
             foreach (var child in content.GetChildren())
                 ApplyInheritedAndGlobalTexStyle(child, documentDefaultTextStyle);
         }
+        
     }
 }

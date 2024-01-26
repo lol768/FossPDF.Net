@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using HarfBuzzSharp;
-using FossPDF.Fluent;
 using FossPDF.Infrastructure;
 using SkiaSharp;
 using Buffer = HarfBuzzSharp.Buffer;
@@ -37,7 +36,6 @@ namespace FossPDF.Drawing
                 buffer.Direction = Direction.RightToLeft;
 
             ShaperFont.Shape(buffer);
-
             var length = buffer.Length;
             var glyphInfos = buffer.GlyphInfos;
             var glyphPositions = buffer.GlyphPositions;
@@ -55,8 +53,6 @@ namespace FossPDF.Drawing
             var glyphs = new ShapedGlyph[length];
 
             bool isFirstGlyphCluster = true;
-
-            Console.WriteLine("I am Shaping text \"{0}\" with length {1}", text, length);
 
             for (var i = 0; i < length; i++)
             {
@@ -99,42 +95,19 @@ namespace FossPDF.Drawing
                     LBearing = lBearing,
                     RBearing = rBearing,
                 };
-                Console.WriteLine("\t" + text[i]);
-                Console.WriteLine(@"		Glyph index: {0}", glyphInfos[i].Codepoint.ToString("X"));
-                Console.WriteLine("\t" + "\tX-offset: {0} (scaled: {1})", glyphPositions[i].XOffset,
-                    glyphPositions[i].XOffset * scaleX);
-                Console.WriteLine("\t" + "\tY-offset: {0} (scaled: {1})", glyphPositions[i].YOffset,
-                    glyphPositions[i].YOffset * scaleY);
-                // isFirstGlyphCluster
-                Console.WriteLine("\t" + "\tIsFirstGlyphCluster: {0}", isFirstGlyphCluster);
-                // isLastGlyphCluster
-                Console.WriteLine("\t" + "\tIsLastGlyphCluster: {0}", isLastGlyphCluster);
-                // xOffset modifier
-                Console.WriteLine("\t" + "\tX-offset modifier [scaled]: {0}", xOffset);
-                Console.WriteLine("\t" + "\tX-advance: {0} (scaled: {1})", glyphPositions[i].XAdvance,
-                    glyphPositions[i].XAdvance * scaleX);
-                Console.WriteLine("\t" + "\tY-advance: {0} (scaled: {1})", glyphPositions[i].YAdvance,
-                    glyphPositions[i].YAdvance * scaleY);
-                if (hasExtents)
-                {
-                    Console.WriteLine("\t" + "\tExtents height: {0} (scaled: {1})", extents.Height,
-                        extents.Height * scaleY);
-                    Console.WriteLine("\t" + "\tExtents width: {0} (scaled: {1})", extents.Width,
-                        extents.Width * scaleX);
-                    // print lBearing and rBearing (both scaled)
-                    Console.WriteLine("\t" + "\tExtents lBearing [scaled] {0}", lBearing);
-                    Console.WriteLine("\t" + "\tExtents rBearing [scaled] {0}", rBearing);
-                }
 
                 xOffset += glyphPositions[i].XAdvance * scaleX;
                 yOffset += glyphPositions[i].YAdvance * scaleY;
             }
 
-            // normalise all the glyphs so they start at no further to the left than X=0
-            var minX = glyphs.Min(g => g.Position.X);
-            for (var i = 0; i < glyphs.Length; i++)
+            if (glyphs.Length > 0)
             {
-                glyphs[i].Position.X -= minX;
+                // normalise all the glyphs so they start at no further to the left than X=0
+                var minX = glyphs.Min(g => g.Position.X);
+                for (var i = 0; i < glyphs.Length; i++)
+                {
+                    glyphs[i].Position.X -= minX;
+                }
             }
 
             return new TextShapingResult(buffer.Direction, glyphs, scaleX, scaleY);
@@ -257,19 +230,6 @@ namespace FossPDF.Drawing
 
             if (end.RBearing != null)
                 adjustX += (int)(end.RBearing);
-
-
-            Console.WriteLine("Measuring width of text from {0} to {1}", startIndex, endIndex);
-            Console.WriteLine("\t" + "\tStart glyph index: {0}", start.Codepoint.ToString("X"));
-            Console.WriteLine("\t" + "\tEnd glyph index: {0}", end.Codepoint.ToString("X"));
-            Console.WriteLine("\t" + "\tStart glyph position: {0}", start.Position);
-            Console.WriteLine("\t" + "\tEnd glyph position: {0}", end.Position);
-            Console.WriteLine("\t" + "\tStart glyph width: {0}", start.Width);
-            Console.WriteLine("\t" + "\tEnd glyph width: {0}", end.Width);
-            Console.WriteLine("\t" + "\tStart glyph lBearing: {0}", start.LBearing);
-            Console.WriteLine("\t" + "\tEnd glyph rBearing: {0}", end.RBearing);
-            Console.WriteLine("\t" + "\tAdjustX: {0}", adjustX);
-            Console.WriteLine("\t" + "\tDirection: {0}", Direction);
 
             // sum the widths of each glyph
             var sum = 0f;

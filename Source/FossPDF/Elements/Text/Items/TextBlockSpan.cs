@@ -21,6 +21,12 @@ namespace FossPDF.Elements.Text.Items
         private Dictionary<MeasurementCacheKey, TextMeasurementResult?> MeasureCache = new ();
         protected virtual bool EnableTextCache => true;
 
+        public void ClearTextShapingResult()
+        {
+            TextShapingResult = null;
+            MeasureCache.Clear(); // In theory this shouldn't change, but in tests it did seem to cause problems
+        }
+
         private record struct MeasurementCacheKey
         {
             public int StartIndex { get; set; }
@@ -42,9 +48,7 @@ namespace FossPDF.Elements.Text.Items
 
             if (!MeasureCache.ContainsKey(cacheKey))
             {
-                Console.WriteLine("Cache miss, measuring text \"" + Text + "\"" + request.StartIndex + " " + request.AvailableWidth + " " + request.IsFirstElementInBlock + " " + request.IsFirstElementInLine);
                 MeasureCache[cacheKey] = MeasureWithoutCache(request);
-                Console.WriteLine("\tGot result with width " + MeasureCache[cacheKey]?.Width);
             }
             
             return MeasureCache[cacheKey];
@@ -151,12 +155,32 @@ namespace FossPDF.Elements.Text.Items
             // otherwise, move the item into the next line
             return isFirstElementInLine ? (endIndex, endIndex + 1) : null;
         }
+
+        public List<uint>? GetGlyphCodepoints()
+        {
+            if (TextShapingResult == null)
+            {
+                return null;
+            }
+
+            var result = new List<uint>();
+            for (var i = 0; i < TextShapingResult.Length; i++)
+            {
+                var glyph = TextShapingResult[i];
+                result.Add(glyph.Codepoint);
+            }
+
+            return result;
+        }
         
         public virtual void Draw(TextDrawingRequest request)
         {
             var fontMetrics = Style.ToFontMetrics();
 
             var glyphOffsetY = GetGlyphOffset();
+            
+            // if we're here post-subset, we need to re-shape the text because the glyph IDs will have changed
+            TextShapingResult ??= Style.ToTextShaper().Shape(Text);
             
             var textDrawingCommand = TextShapingResult.PositionText(request.StartIndex, request.EndIndex, Style);
 

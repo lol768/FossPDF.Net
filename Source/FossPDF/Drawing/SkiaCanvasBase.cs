@@ -31,7 +31,6 @@ namespace FossPDF.Drawing
 
         public void DrawText(SKTextBlob skTextBlob, Position position, TextStyle style)
         {
-            Console.WriteLine("SkiaCanvasBase.DrawText: " + skTextBlob + " " + position + " " + style);
             Canvas.DrawText(skTextBlob, position.X, position.Y, style.ToPaint());
         }
 
