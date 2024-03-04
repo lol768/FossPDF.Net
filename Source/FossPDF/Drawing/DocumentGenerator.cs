@@ -7,7 +7,6 @@ using FossPDF.Drawing.Proxy;
 using FossPDF.Elements;
 using FossPDF.Elements.Text;
 using FossPDF.Elements.Text.Items;
-using FossPDF.Fluent;
 using FossPDF.Helpers;
 using FossPDF.Infrastructure;
 using HarfBuzzSharp;
@@ -21,20 +20,20 @@ namespace FossPDF.Drawing
         {
             NativeDependencyCompatibilityChecker.Test();
         }
-        
+
         internal static void GeneratePdf(Stream stream, IDocument document)
         {
             CheckIfStreamIsCompatible(stream);
-            
+
             var metadata = document.GetMetadata();
             var canvas = new PdfCanvas(stream, metadata);
             RenderDocument(canvas, document);
         }
-        
+
         internal static void GenerateXps(Stream stream, IDocument document)
         {
             CheckIfStreamIsCompatible(stream);
-            
+
             var metadata = document.GetMetadata();
             var canvas = new XpsCanvas(stream, metadata);
             RenderDocument(canvas, document);
@@ -44,11 +43,11 @@ namespace FossPDF.Drawing
         {
             if (!stream.CanWrite)
                 throw new ArgumentException("The library requires a Stream object with the 'write' capability available (the CanWrite flag). Please consider using the MemoryStream class.");
-            
+
             if (!stream.CanSeek)
                 throw new ArgumentException("The library requires a Stream object with the 'seek' capability available (the CanSeek flag). Please consider using the MemoryStream class.");
         }
-        
+
         internal static ICollection<byte[]> GenerateImages(IDocument document)
         {
             var metadata = document.GetMetadata();
@@ -64,7 +63,7 @@ namespace FossPDF.Drawing
             RenderDocument(canvas, document);
             return canvas.Pictures;
         }
-        
+
         internal static void RenderDocument<TCanvas>(TCanvas canvas, IDocument document)
             where TCanvas : ICanvas, IRenderingCanvas
         {
@@ -73,72 +72,92 @@ namespace FossPDF.Drawing
             var content = container.Compose();
             ApplyInheritedAndGlobalTexStyle(content, TextStyle.Default);
             ApplyContentDirection(content, ContentDirection.LeftToRight);
-            
+
             var debuggingState = Settings.EnableDebugging ? ApplyDebugging(content) : null;
-            
+
             if (Settings.EnableCaching)
                 ApplyCaching(content);
 
-            var pageContext = new PageContext();
+            var pageContext = new PageContext
+            {
+                FontManager = FontManager.MakeDocumentSpecific()
+            };
             RenderPass(pageContext, new FreeCanvas(), content, debuggingState);
-            
+
             // interrogate all TextBlockSpans
             var allMyFuckingGlyphs = new Dictionary<Font, HashSet<uint>>();
             var typeFaceToGlyphs = new Dictionary<SKTypeface, HashSet<uint>>();
 
             content.VisitChildren(el =>
             {
-                if (el is not TextBlock tb) return;
-                foreach (var textBlockItem in tb.Items)
-                {
-                    if (textBlockItem is not TextBlockSpan span) continue;
-                    var glyphCodepoints = span.GetGlyphCodepoints();
-                    if (glyphCodepoints == null) continue;
-                   
-                    var shaperFont = span.Style.ToShaperFont();
-                    var existingList = allMyFuckingGlyphs.TryGetValue(shaperFont, out var glyphList)
-                        ? glyphList
-                        : new HashSet<uint>();
-                    foreach (var glyphCodepoint in glyphCodepoints)
-                    {
-                        existingList.Add(glyphCodepoint);
-                    }
-                    
-                    var existingTfList = typeFaceToGlyphs.TryGetValue(span.Style.ToFont().Typeface, out var glyphListTf)
-                        ? glyphListTf
-                        : new HashSet<uint>();
-                    foreach (var glyphCodepoint in glyphCodepoints)
-                    {
-                        existingTfList.Add(glyphCodepoint);
-                    }
-
-                    typeFaceToGlyphs[span.Style.ToFont().Typeface] = existingTfList;
-                    span.ClearTextShapingResult();
-
-                    allMyFuckingGlyphs[shaperFont] = existingList;
-                }
+                ProcessElementPrepareForSubsetting(el, allMyFuckingGlyphs, typeFaceToGlyphs, pageContext.FontManager);
             });
-            
+
             var reqs = typeFaceToGlyphs.Select(entry => new FontToBeSubset { Glyphs = entry.Value, Typeface = entry.Key }).ToList();
-            FontManager.FireSubsetCallback(reqs);
+            pageContext.FontManager.FireSubsetCallback(reqs);
+            RenderPass(pageContext, new FreeCanvas(), content, debuggingState);
+
             RenderPass(pageContext, canvas, content, debuggingState);
         }
-        
+
+        private static void ProcessElementPrepareForSubsetting(Element? el, IDictionary<Font, HashSet<uint>> allMyFuckingGlyphs,
+            IDictionary<SKTypeface, HashSet<uint>> typeFaceToGlyphs, DocumentSpecificFontManager fontManager)
+        {
+            if (el is DynamicHost dh)
+            {
+                // these are rather annoying "black boxes", but we can reach
+                // inside them and use the TextBlocks cached on the DynamicHost
+                foreach (var textBlock in dh.GetTextBlocks())
+                {
+                    ProcessElementPrepareForSubsetting(textBlock, allMyFuckingGlyphs, typeFaceToGlyphs, fontManager);
+                }
+            }
+            if (el is not TextBlock tb) return;
+            foreach (var textBlockItem in tb.Items)
+            {
+                if (textBlockItem is not TextBlockSpan span) continue;
+                var glyphCodepoints = span.GetGlyphCodepoints();
+                if (glyphCodepoints == null) continue;
+
+                var shaperFont = fontManager.ToShaperFont(span.Style);
+                var existingList = allMyFuckingGlyphs.TryGetValue(shaperFont, out var glyphList)
+                    ? glyphList
+                    : new HashSet<uint>();
+                foreach (var glyphCodepoint in glyphCodepoints)
+                {
+                    existingList.Add(glyphCodepoint);
+                }
+
+                var existingTfList = typeFaceToGlyphs.TryGetValue(fontManager.ToFont(span.Style).Typeface, out var glyphListTf)
+                    ? glyphListTf
+                    : new HashSet<uint>();
+                foreach (var glyphCodepoint in glyphCodepoints)
+                {
+                    existingTfList.Add(glyphCodepoint);
+                }
+
+                typeFaceToGlyphs[fontManager.ToFont(span.Style).Typeface] = existingTfList;
+                span.ClearTextShapingResult();
+
+                allMyFuckingGlyphs[shaperFont] = existingList;
+            }
+        }
+
         internal static void RenderPass<TCanvas>(PageContext pageContext, TCanvas canvas, Container content, DebuggingState? debuggingState)
             where TCanvas : ICanvas, IRenderingCanvas
         {
             InjectDependencies(content, pageContext, canvas);
             content.VisitChildren(x => (x as IStateResettable)?.ResetState());
-            
+
             canvas.BeginDocument();
 
             var currentPage = 1;
-            
+
             while(true)
             {
                 pageContext.SetPageNumber(currentPage);
                 debuggingState?.Reset();
-                
+
                 var spacePlan = content.Measure(Size.Max);
 
                 if (spacePlan.Type == SpacePlanType.Wrap)
@@ -165,13 +184,13 @@ namespace FossPDF.Drawing
                     canvas.EndDocument();
                     ThrowLayoutException();
                 }
-                
+
                 if (spacePlan.Type == SpacePlanType.FullRender)
                     break;
 
                 currentPage++;
             }
-            
+
             canvas.EndDocument();
 
             void ThrowLayoutException()
@@ -194,7 +213,7 @@ namespace FossPDF.Drawing
             {
                 if (x == null)
                     return;
-                
+
                 x.PageContext = pageContext;
                 x.Canvas = canvas;
             });
@@ -220,7 +239,7 @@ namespace FossPDF.Drawing
 
             return debuggingState;
         }
-        
+
         internal static void ApplyContentDirection(this Element? content, ContentDirection direction)
         {
             if (content == null)
@@ -234,7 +253,7 @@ namespace FossPDF.Drawing
 
             if (content is IContentDirectionAware contentDirectionAware)
                 contentDirectionAware.ContentDirection = direction;
-            
+
             foreach (var child in content.GetChildren())
                 ApplyContentDirection(child, direction);
         }
@@ -243,30 +262,30 @@ namespace FossPDF.Drawing
         {
             if (content == null)
                 return;
-            
+
             if (content is TextBlock textBlock)
             {
                 foreach (var textBlockItem in textBlock.Items)
                 {
                     if (textBlockItem is TextBlockSpan textSpan)
                         textSpan.Style = textSpan.Style.ApplyInheritedStyle(documentDefaultTextStyle).ApplyGlobalStyle();
-                    
+
                     if (textBlockItem is TextBlockElement textElement)
                         ApplyInheritedAndGlobalTexStyle(textElement.Element, documentDefaultTextStyle);
                 }
-                
+
                 return;
             }
 
             if (content is DynamicHost dynamicHost)
                 dynamicHost.TextStyle = dynamicHost.TextStyle.ApplyInheritedStyle(documentDefaultTextStyle);
-            
+
             if (content is DefaultTextStyle defaultTextStyleElement)
                documentDefaultTextStyle = defaultTextStyleElement.TextStyle.ApplyInheritedStyle(documentDefaultTextStyle);
 
             foreach (var child in content.GetChildren())
                 ApplyInheritedAndGlobalTexStyle(child, documentDefaultTextStyle);
         }
-        
+
     }
 }

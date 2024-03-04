@@ -16,9 +16,9 @@ namespace FossPDF.UnitTests.TestEngine
         public void Scale(float scaleX, float scaleY) => Operations.Add(new CanvasScaleOperation(scaleX, scaleY));
 
         public void DrawRectangle(Position vector, Size size, string color) => Operations.Add(new CanvasDrawRectangleOperation(vector, size, color));
-        public void DrawText(SKTextBlob skTextBlob, Position position, TextStyle style) => throw new NotImplementedException();
+        public void DrawText(SKTextBlob skTextBlob, Position position, TextStyle style, DocumentSpecificFontManager fontManager) => throw new NotImplementedException();
         public void DrawImage(SKImage image, Position position, Size size) => Operations.Add(new CanvasDrawImageOperation(position, size));
-        
+
         public void DrawHyperlink(string url, Size size) => throw new NotImplementedException();
         public void DrawSectionLink(string sectionName, Size size) => throw new NotImplementedException();
         public void DrawSection(string sectionName) => throw new NotImplementedException();

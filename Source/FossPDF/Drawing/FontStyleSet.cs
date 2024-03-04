@@ -5,7 +5,7 @@ using SkiaSharp;
 
 namespace FossPDF.Drawing
 {
-    internal class FontStyleSet
+    public class FontStyleSet
     {
         private ConcurrentDictionary<SKFontStyle, SKTypeface> Styles { get; } = new();
 

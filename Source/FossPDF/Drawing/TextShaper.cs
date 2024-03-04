@@ -7,18 +7,20 @@ using Buffer = HarfBuzzSharp.Buffer;
 
 namespace FossPDF.Drawing
 {
-    internal class TextShaper
+    public class TextShaper
     {
+        private readonly DocumentSpecificFontManager _fontManager;
         public const int FontShapingScale = 512;
 
         private TextStyle TextStyle { get; }
 
-        private SKFont Font => TextStyle.ToFont();
-        private Font ShaperFont => TextStyle.ToShaperFont();
-        private SKPaint Paint => TextStyle.ToPaint();
+        private SKFont Font => _fontManager.ToFont(TextStyle);
+        private Font ShaperFont => _fontManager.ToShaperFont(TextStyle);
+        private SKPaint Paint => _fontManager.ToPaint(TextStyle);
 
-        public TextShaper(TextStyle textStyle)
+        public TextShaper(TextStyle textStyle, DocumentSpecificFontManager fontManager)
         {
+            _fontManager = fontManager;
             TextStyle = textStyle;
         }
 
@@ -110,7 +112,7 @@ namespace FossPDF.Drawing
                 }
             }
 
-            return new TextShapingResult(buffer.Direction, glyphs, scaleX, scaleY);
+            return new TextShapingResult(buffer.Direction, glyphs, scaleX, scaleY, _fontManager);
         }
 
         void PopulateBufferWithText(Buffer buffer, string text)
@@ -131,7 +133,7 @@ namespace FossPDF.Drawing
         }
     }
 
-    internal struct ShapedGlyph
+    public struct ShapedGlyph
     {
         public ushort Codepoint;
         public SKPoint Position;
@@ -140,13 +142,13 @@ namespace FossPDF.Drawing
         public float? LBearing { get; set; }
     }
 
-    internal struct DrawTextCommand
+    public struct DrawTextCommand
     {
         public SKTextBlob SkTextBlob;
         public float TextOffsetX;
     }
 
-    internal class TextShapingResult
+    public class TextShapingResult
     {
         private Direction Direction { get; }
         private ShapedGlyph[] Glyphs { get; }
@@ -155,17 +157,20 @@ namespace FossPDF.Drawing
 
         public int Length => Glyphs.Length;
 
+        private DocumentSpecificFontManager FontManager { get; }
+
         public ShapedGlyph this[int index] =>
             Direction == Direction.LeftToRight
                 ? Glyphs[index]
                 : Glyphs[Glyphs.Length - 1 - index];
 
-        public TextShapingResult(Direction direction, ShapedGlyph[] glyphs, float scaleX, float scaleY)
+        public TextShapingResult(Direction direction, ShapedGlyph[] glyphs, float scaleX, float scaleY, DocumentSpecificFontManager fontManager)
         {
             Direction = direction;
             Glyphs = glyphs;
             ScaleX = scaleX;
             ScaleY = scaleY;
+            FontManager = fontManager;
         }
 
         public int BreakText(int startIndex, float maxWidth)
@@ -252,7 +257,7 @@ namespace FossPDF.Drawing
             using var skTextBlobBuilder = new SKTextBlobBuilder();
 
             var positionedRunBuffer =
-                skTextBlobBuilder.AllocatePositionedRun(textStyle.ToFont(), endIndex - startIndex + 1);
+                skTextBlobBuilder.AllocatePositionedRun(FontManager.ToFont(textStyle), endIndex - startIndex + 1);
             var glyphSpan = positionedRunBuffer.GetGlyphSpan();
             var positionSpan = positionedRunBuffer.GetPositionSpan();
 

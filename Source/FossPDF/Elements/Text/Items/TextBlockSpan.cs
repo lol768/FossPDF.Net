@@ -17,25 +17,24 @@ namespace FossPDF.Elements.Text.Items
         public TextStyle Style { get; set; } = TextStyle.Default;
         private TextShapingResult? TextShapingResult { get; set; }
         private ushort? SpaceCodepoint { get; set; }
-        
+
         private Dictionary<MeasurementCacheKey, TextMeasurementResult?> MeasureCache = new ();
         protected virtual bool EnableTextCache => true;
 
         public void ClearTextShapingResult()
         {
             TextShapingResult = null;
-            MeasureCache.Clear(); // In theory this shouldn't change, but in tests it did seem to cause problems
         }
 
         private record struct MeasurementCacheKey
         {
             public int StartIndex { get; set; }
             public float AvailableWidth { get; set; }
-        
+
             public bool IsFirstElementInBlock { get; set; }
             public bool IsFirstElementInLine { get; set; }
         }
-        
+
         public virtual TextMeasurementResult? Measure(TextMeasurementRequest request)
         {
             var cacheKey = new MeasurementCacheKey
@@ -50,7 +49,7 @@ namespace FossPDF.Elements.Text.Items
             {
                 MeasureCache[cacheKey] = MeasureWithoutCache(request);
             }
-            
+
             return MeasureCache[cacheKey];
         }
 
@@ -58,15 +57,16 @@ namespace FossPDF.Elements.Text.Items
         {
             if (!EnableTextCache)
                 TextShapingResult = null;
-            
-            TextShapingResult ??= Style.ToTextShaper().Shape(Text);
 
-            var paint = Style.ToPaint();
-            var fontMetrics = Style.ToFontMetrics();
+            var textShaper = request.PageContext.FontManager.ToTextShaper(Style);
+            TextShapingResult ??= textShaper.Shape(Text);
+
+            var paint = request.PageContext.FontManager.ToPaint(Style);
+            var fontMetrics = request.PageContext.FontManager.ToFontMetrics(Style);
             SpaceCodepoint ??= paint.ToFont().Typeface.GetGlyphs(" ")[0];
 
             var startIndex = request.StartIndex;
-            
+
             // if the element is the first one within the line,
             // ignore leading spaces
             if (!request.IsFirstElementInBlock && request.IsFirstElementInLine)
@@ -80,44 +80,45 @@ namespace FossPDF.Elements.Text.Items
                 return new TextMeasurementResult
                 {
                     Width = 0,
-                    
+
                     LineHeight = Style.LineHeight ?? 1,
                     Ascent = fontMetrics.Ascent,
                     Descent = fontMetrics.Descent
                 };
             }
-            
+
             // start breaking text from requested position
             var endIndex = TextShapingResult.BreakText(startIndex, request.AvailableWidth);
 
             if (endIndex < startIndex)
                 return null;
-  
+
             // break text only on spaces
             var wrappedText = WrapText(startIndex, endIndex, request.IsFirstElementInLine);
 
             if (wrappedText == null)
                 return null;
-            
+
             // measure final text
             var width = TextShapingResult.MeasureWidth(startIndex, wrappedText.Value.endIndex);
-            
+
             return new TextMeasurementResult
             {
                 Width = width,
-                
+
                 Ascent = fontMetrics.Ascent,
                 Descent = fontMetrics.Descent,
-     
+
                 LineHeight = Style.LineHeight ?? 1,
-                
+
                 StartIndex = startIndex,
                 EndIndex = wrappedText.Value.endIndex,
                 NextIndex = wrappedText.Value.nextIndex,
                 TotalIndex = TextShapingResult.Length - 1
             };
+
         }
-        
+
         // TODO: consider introducing text wrapping abstraction (basic, english-like, asian-like)
         private (int endIndex, int nextIndex)? WrapText(int startIndex, int endIndex, bool isFirstElementInLine)
         {
@@ -130,11 +131,11 @@ namespace FossPDF.Elements.Text.Items
             // breaking anywhere
             if (Style.WrapAnywhere ?? false)
                 return (endIndex, endIndex + 1);
-                
+
             // current line ends at word, next character is space, perfect place to wrap
             if (TextShapingResult[endIndex].Codepoint != SpaceCodepoint && TextShapingResult[endIndex + 1].Codepoint == SpaceCodepoint)
                 return (endIndex, endIndex + 2);
-                
+
             // find last space within the available text to wrap
             var lastSpaceIndex = endIndex;
 
@@ -149,7 +150,7 @@ namespace FossPDF.Elements.Text.Items
             // text contains space that can be used to wrap
             if (lastSpaceIndex > 1 && lastSpaceIndex >= startIndex)
                 return (lastSpaceIndex - 1, lastSpaceIndex + 1);
-                
+
             // there is no available space to wrap text
             // if the item is first within the line, perform safe mode and chop the word
             // otherwise, move the item into the next line
@@ -172,23 +173,24 @@ namespace FossPDF.Elements.Text.Items
 
             return result;
         }
-        
+
         public virtual void Draw(TextDrawingRequest request)
         {
-            var fontMetrics = Style.ToFontMetrics();
+            var fontMetrics = request.PageContext.FontManager.ToFontMetrics(Style);
 
             var glyphOffsetY = GetGlyphOffset();
-            
+
             // if we're here post-subset, we need to re-shape the text because the glyph IDs will have changed
-            TextShapingResult ??= Style.ToTextShaper().Shape(Text);
-            
+            var textShaper = request.PageContext.FontManager.ToTextShaper(Style);
+            TextShapingResult ??= textShaper.Shape(Text);
+
             var textDrawingCommand = TextShapingResult.PositionText(request.StartIndex, request.EndIndex, Style);
 
             if (Style.BackgroundColor != Colors.Transparent)
                 request.Canvas.DrawRectangle(new Position(0, request.TotalAscent), new Size(request.TextSize.Width, request.TextSize.Height), Style.BackgroundColor);
-            
+
             if (textDrawingCommand.HasValue)
-                request.Canvas.DrawText(textDrawingCommand.Value.SkTextBlob, new Position(textDrawingCommand.Value.TextOffsetX, glyphOffsetY), Style);
+                request.Canvas.DrawText(textDrawingCommand.Value.SkTextBlob, new Position(textDrawingCommand.Value.TextOffsetX, glyphOffsetY), Style, request.PageContext.FontManager);
 
             // draw underline
             if (Style.HasUnderline ?? false)
@@ -196,16 +198,16 @@ namespace FossPDF.Elements.Text.Items
                 var underlineOffset = Style.FontPosition == FontPosition.Superscript ? 0 : glyphOffsetY;
                 DrawLine(fontMetrics.UnderlinePosition + underlineOffset, fontMetrics.UnderlineThickness);
             }
-            
+
             // draw stroke
             if (Style.HasStrikethrough ?? false)
             {
                 var strikeoutThickness = fontMetrics.StrikeoutThickness;
                 strikeoutThickness *= Style.FontPosition == FontPosition.Normal ? 1f : 0.625f;
-                
+
                 DrawLine(fontMetrics.StrikeoutPosition + glyphOffsetY, strikeoutThickness);
             }
-            
+
             void DrawLine(float offset, float thickness)
             {
                 request.Canvas.DrawRectangle(new Position(0, offset), new Size(request.TextSize.Width, thickness), Style.Color);

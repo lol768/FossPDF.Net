@@ -11,7 +11,7 @@ namespace FossPDF.Elements.Text
     internal class TextBlock : Element, IStateResettable, IContentDirectionAware
     {
         public ContentDirection ContentDirection { get; set; }
-        
+
         public HorizontalAlignment? Alignment { get; set; }
         public List<ITextBlockItem> Items { get; set; } = new List<ITextBlockItem>();
 
@@ -36,9 +36,9 @@ namespace FossPDF.Elements.Text
                     RenderingQueue = new Queue<ITextBlockItem>(Items);
                     return;
                 }
-                
+
                 RenderingQueue.Clear();
-            
+
                 foreach (var item in Items)
                     RenderingQueue.Enqueue(item);
             }
@@ -48,11 +48,11 @@ namespace FossPDF.Elements.Text
                 if (FontFallbackApplied)
                     return;
 
-                Items = Items.ApplyFontFallback().ToList();
+                Items = Items.ApplyFontFallback(PageContext).ToList();
                 FontFallbackApplied = true;
             }
         }
-        
+
         void SetDefaultAlignment()
         {
             if (Alignment.HasValue)
@@ -66,15 +66,15 @@ namespace FossPDF.Elements.Text
         internal override SpacePlan Measure(Size availableSpace)
         {
             SetDefaultAlignment();
-            
+
             if (!RenderingQueue.Any())
                 return SpacePlan.FullRender(Size.Zero);
-            
+
             var lines = DivideTextItemsIntoLines(availableSpace.Width, availableSpace.Height).ToList();
 
             if (!lines.Any())
                 return SpacePlan.Wrap();
-            
+
             var width = lines.Max(x => x.Width);
             var height = lines.Sum(x => x.LineHeight);
 
@@ -85,22 +85,22 @@ namespace FossPDF.Elements.Text
                 .SelectMany(x => x.Elements)
                 .GroupBy(x => x.Item)
                 .Count(x => x.Any(y => y.Measurement.IsLast));
-            
+
             if (fullyRenderedItemsCount == RenderingQueue.Count)
                 return SpacePlan.FullRender(width, height);
-            
+
             return SpacePlan.PartialRender(width, height);
         }
 
         internal override void Draw(Size availableSpace)
         {
             SetDefaultAlignment();
-            
+
             var lines = DivideTextItemsIntoLines(availableSpace.Width, availableSpace.Height).ToList();
-            
+
             if (!lines.Any())
                 return;
-            
+
             var topOffset = 0f;
 
             foreach (var line in lines)
@@ -113,25 +113,25 @@ namespace FossPDF.Elements.Text
                     {
                         Canvas = Canvas,
                         PageContext = PageContext,
-                        
+
                         StartIndex = item.Measurement.StartIndex,
                         EndIndex = item.Measurement.EndIndex,
-                        
+
                         TextSize = new Size(item.Measurement.Width, line.LineHeight),
                         TotalAscent = line.Ascent
                     };
-                
+
                     var canvasOffset = ContentDirection == ContentDirection.LeftToRight
                         ? new Position(leftOffset, topOffset - line.Ascent)
                         : new Position(availableSpace.Width - leftOffset - item.Measurement.Width, topOffset - line.Ascent);
-                    
+
                     Canvas.Translate(canvasOffset);
                     item.Item.Draw(textDrawingRequest);
                     Canvas.Translate(canvasOffset.Reverse());
-                    
+
                     leftOffset += item.Measurement.Width;
                 }
-                
+
                 topOffset += line.LineHeight;
             }
 
@@ -145,10 +145,10 @@ namespace FossPDF.Elements.Text
 
             var lastElementMeasurement = lines.Last().Elements.Last().Measurement;
             CurrentElementIndex = lastElementMeasurement.IsLast ? 0 : lastElementMeasurement.NextIndex;
-            
+
             if (!RenderingQueue.Any())
                 ResetState();
-            
+
             float GetAlignmentOffset(float lineWidth)
             {
                 var emptySpace = availableSpace.Width - lineWidth;
@@ -172,10 +172,10 @@ namespace FossPDF.Elements.Text
             while (queue.Any())
             {
                 var line = GetNextLine();
-                
+
                 if (!line.Elements.Any())
                     yield break;
-                
+
                 if (currentHeight + line.LineHeight > availableHeight + Size.Epsilon)
                     yield break;
 
@@ -188,31 +188,31 @@ namespace FossPDF.Elements.Text
                 var currentWidth = 0f;
 
                 var currentLineElements = new List<TextLineElement>();
-            
+
                 while (true)
                 {
                     if (!queue.Any())
                         break;
 
                     var currentElement = queue.Peek();
-                    
+
                     var measurementRequest = new TextMeasurementRequest
                     {
                         Canvas = Canvas,
                         PageContext = PageContext,
-                        
+
                         StartIndex = currentItemIndex,
                         AvailableWidth = availableWidth - currentWidth,
-                        
+
                         IsFirstElementInBlock = currentElement == Items.First(),
                         IsFirstElementInLine = !currentLineElements.Any()
                     };
-                
+
                     var measurementResponse = currentElement.Measure(measurementRequest);
-                
+
                     if (measurementResponse == null)
                         break;
-                    
+
                     currentLineElements.Add(new TextLineElement
                     {
                         Item = currentElement,
@@ -221,7 +221,7 @@ namespace FossPDF.Elements.Text
 
                     currentWidth += measurementResponse.Width;
                     currentItemIndex = measurementResponse.NextIndex;
-                    
+
                     if (!measurementResponse.IsLast)
                         break;
 

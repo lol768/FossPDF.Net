@@ -1,22 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using FossPDF.Drawing;
 
 namespace FossPDF.Infrastructure
 {
     internal class PageContext : IPageContext
     {
         public const string DocumentLocation = "document";
-        
+
         private List<DocumentLocation> Locations { get; } = new();
         public int CurrentPage { get; private set; }
+
+        public DocumentSpecificFontManager FontManager { get; set; }
 
         internal void SetPageNumber(int number)
         {
             CurrentPage = number;
             SetSectionPage(DocumentLocation);
         }
-        
+
         public void SetSectionPage(string name)
         {
             var location = GetLocation(name);
@@ -29,7 +32,7 @@ namespace FossPDF.Infrastructure
                     PageStart = CurrentPage,
                     PageEnd = CurrentPage
                 };
-                
+
                 Locations.Add(location);
             }
 

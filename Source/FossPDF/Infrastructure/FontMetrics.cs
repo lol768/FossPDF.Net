@@ -1,6 +1,6 @@
 namespace FossPDF.Infrastructure
 {
-    internal struct FontMetrics
+    public struct FontMetrics
     {
         public float Ascent { get; set; }
         public float Descent { get; set; }

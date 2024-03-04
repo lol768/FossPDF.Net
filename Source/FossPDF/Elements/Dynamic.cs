@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using FossPDF.Drawing;
 using FossPDF.Drawing.Exceptions;
+using FossPDF.Elements.Text;
 using FossPDF.Helpers;
 using FossPDF.Infrastructure;
 
@@ -13,6 +15,8 @@ namespace FossPDF.Elements
 
         internal TextStyle TextStyle { get; set; } = TextStyle.Default;
         public ContentDirection ContentDirection { get; set; }
+
+        private List<TextBlock> TextBlocks { get; } = new();
         
         public DynamicHost(DynamicComponentProxy child)
         {
@@ -31,6 +35,11 @@ namespace FossPDF.Elements
             var result = GetContent(availableSpace, acceptNewState: false);
             var content = result.Content as Element ?? Empty.Instance;
             var measurement = content.Measure(availableSpace);
+            content.VisitChildren(child =>
+            {
+                if (child is TextBlock textBlock)
+                    TextBlocks.Add(textBlock);
+            });
 
             if (measurement.Type != SpacePlanType.FullRender)
                 throw new DocumentLayoutException("Dynamic component generated content that does not fit on a single page.");
@@ -38,6 +47,11 @@ namespace FossPDF.Elements
             return result.HasMoreContent 
                 ? SpacePlan.PartialRender(measurement) 
                 : SpacePlan.FullRender(measurement);
+        }
+        
+        internal IEnumerable<TextBlock> GetTextBlocks()
+        {
+            return TextBlocks;
         }
 
         internal override void Draw(Size availableSpace)

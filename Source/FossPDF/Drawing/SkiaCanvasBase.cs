@@ -11,10 +11,10 @@ namespace FossPDF.Drawing
 
         public abstract void BeginDocument();
         public abstract void EndDocument();
-        
+
         public abstract void BeginPage(Size size);
         public abstract void EndPage();
-        
+
         public void Translate(Position vector)
         {
             Canvas.Translate(vector.X, vector.Y);
@@ -29,9 +29,9 @@ namespace FossPDF.Drawing
             Canvas.DrawRect(vector.X, vector.Y, size.Width, size.Height, paint);
         }
 
-        public void DrawText(SKTextBlob skTextBlob, Position position, TextStyle style)
+        public void DrawText(SKTextBlob skTextBlob, Position position, TextStyle style, DocumentSpecificFontManager fontManager)
         {
-            Canvas.DrawText(skTextBlob, position.X, position.Y, style.ToPaint());
+            Canvas.DrawText(skTextBlob, position.X, position.Y, fontManager.ToPaint(style));
         }
 
         public void DrawImage(SKImage image, Position vector, Size size)
@@ -43,7 +43,7 @@ namespace FossPDF.Drawing
         {
             Canvas.DrawUrlAnnotation(new SKRect(0, 0, size.Width, size.Height), url);
         }
-        
+
         public void DrawSectionLink(string sectionName, Size size)
         {
             Canvas.DrawLinkDestinationAnnotation(new SKRect(0, 0, size.Width, size.Height), sectionName);
