@@ -14,6 +14,7 @@ namespace FossPDF.Drawing
 {
     public class DocumentSpecificFontManager
     {
+        public string Tag { get; set; }
         public ConcurrentDictionary<string, FontStyleSet> StyleSets { get; init; }
         public ConcurrentDictionary<TextStyle, FontMetrics> FontMetrics { get; init; }
         public ConcurrentDictionary<TextStyle, SKPaint> FontPaints { get; init; }
@@ -256,6 +257,18 @@ namespace FossPDF.Drawing
         public SKFont ToFont(TextStyle style)
         {
             return Fonts.GetOrAdd(style, key => ToPaint(key).ToFont());
+        }
+
+        public void DisposeAll()
+        {
+            foreach (var paint in FontPaints.Values)
+                paint.Dispose();
+
+            foreach (var font in Fonts.Values)
+            {
+                font.Typeface.Dispose();
+                font.Dispose();
+            }
         }
     }
 }

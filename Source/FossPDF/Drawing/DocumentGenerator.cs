@@ -78,9 +78,11 @@ namespace FossPDF.Drawing
             if (Settings.EnableCaching)
                 ApplyCaching(content);
 
+            var documentSpecificFontManager = FontManager.MakeDocumentSpecific();
+            documentSpecificFontManager.Tag = document.GetMetadata().Title ?? string.Empty;
             var pageContext = new PageContext
             {
-                FontManager = FontManager.MakeDocumentSpecific()
+                FontManager = documentSpecificFontManager
             };
             RenderPass(pageContext, new FreeCanvas(), content, debuggingState);
 
@@ -98,6 +100,7 @@ namespace FossPDF.Drawing
             RenderPass(pageContext, new FreeCanvas(), content, debuggingState);
 
             RenderPass(pageContext, canvas, content, debuggingState);
+            pageContext.FontManager.DisposeAll();
         }
 
         private static void ProcessElementPrepareForSubsetting(Element? el, IDictionary<Font, HashSet<uint>> allMyFuckingGlyphs,
