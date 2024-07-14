@@ -26,7 +26,6 @@ namespace FossPDF.Drawing
 
         public TextShapingResult Shape(string text)
         {
-            // Console.WriteLine("Hello from Shape! The string is: \""+text+"\"");
             using var buffer = new Buffer();
 
             PopulateBufferWithText(buffer, text);
@@ -87,7 +86,6 @@ namespace FossPDF.Drawing
 
                 if (isLastGlyphCluster)
                 {
-                    // Console.WriteLine("\t[!] Last cluster with identifier: " + glyphInfos[i].Cluster);
                     widthAdjustment += rBearing ?? 0;
                 }
 
@@ -100,35 +98,6 @@ namespace FossPDF.Drawing
                     LBearing = lBearing,
                     RBearing = rBearing,
                 };
-
-                // Console.WriteLine(@"		Glyph index: {0}", glyphInfos[i].Codepoint.ToString("X"));
-                // Console.WriteLine("\t" + "\tX-offset: {0} (scaled: {1})", glyphPositions[i].XOffset,
-                //     glyphPositions[i].XOffset * scaleX);
-                // Console.WriteLine("\t" + "\tY-offset: {0} (scaled: {1})", glyphPositions[i].YOffset,
-                //     glyphPositions[i].YOffset * scaleY);
-                // // isFirstGlyphCluster
-                // Console.WriteLine("\t" + "\tIsFirstGlyphCluster: {0}", isFirstGlyphCluster);
-                // // isLastGlyphCluster
-                // Console.WriteLine("\t" + "\tIsLastGlyphCluster: {0}", isLastGlyphCluster);
-                // // xOffset modifier
-                // Console.WriteLine("\t" + "\tX-offset modifier [scaled]: {0}", xOffset);
-                // Console.WriteLine("\t" + "\tX-advance: {0} (scaled: {1})", glyphPositions[i].XAdvance,
-                //     glyphPositions[i].XAdvance * scaleX);
-                // Console.WriteLine("\t" + "\tY-advance: {0} (scaled: {1})", glyphPositions[i].YAdvance,
-                //     glyphPositions[i].YAdvance * scaleY);
-                if (hasExtents)
-                {
-                    // Console.WriteLine("\t" + "\tExtents height: {0} (scaled: {1})", extents.Height,
-                    //     extents.Height * scaleY);
-                    // Console.WriteLine("\t" + "\tExtents width: {0} (scaled: {1})", extents.Width,
-                    //     extents.Width * scaleX);
-                    // // print lBearing and rBearing (both scaled)
-                    // Console.WriteLine("\t" + "\tExtents lBearing [scaled] {0}", lBearing);
-                    // Console.WriteLine("\t" + "\tExtents rBearing [scaled] {0}", rBearing);
-                }
-
-                // Console.WriteLine("\n");
-
                 xOffset += glyphPositions[i].XAdvance * scaleX;
                 yOffset += glyphPositions[i].YAdvance * scaleY;
             }
@@ -215,7 +184,6 @@ namespace FossPDF.Drawing
 
             int BreakTextLeftToRight()
             {
-                // Console.WriteLine("Hello from BreakTextLeftToRight! We're breaking text from index: " + startIndex + " with max width: " + maxWidth);
                 var index = startIndex;
                 maxWidth += Glyphs[startIndex].Position.X;
 
