@@ -26,6 +26,7 @@ namespace FossPDF.Drawing
 
         public TextShapingResult Shape(string text)
         {
+            // Console.WriteLine("Hello from Shape! The string is: \""+text+"\"");
             using var buffer = new Buffer();
 
             PopulateBufferWithText(buffer, text);
@@ -38,6 +39,7 @@ namespace FossPDF.Drawing
                 buffer.Direction = Direction.RightToLeft;
 
             ShaperFont.Shape(buffer);
+
             var length = buffer.Length;
             var glyphInfos = buffer.GlyphInfos;
             var glyphPositions = buffer.GlyphPositions;
@@ -85,6 +87,7 @@ namespace FossPDF.Drawing
 
                 if (isLastGlyphCluster)
                 {
+                    // Console.WriteLine("\t[!] Last cluster with identifier: " + glyphInfos[i].Cluster);
                     widthAdjustment += rBearing ?? 0;
                 }
 
@@ -97,6 +100,34 @@ namespace FossPDF.Drawing
                     LBearing = lBearing,
                     RBearing = rBearing,
                 };
+
+                // Console.WriteLine(@"		Glyph index: {0}", glyphInfos[i].Codepoint.ToString("X"));
+                // Console.WriteLine("\t" + "\tX-offset: {0} (scaled: {1})", glyphPositions[i].XOffset,
+                //     glyphPositions[i].XOffset * scaleX);
+                // Console.WriteLine("\t" + "\tY-offset: {0} (scaled: {1})", glyphPositions[i].YOffset,
+                //     glyphPositions[i].YOffset * scaleY);
+                // // isFirstGlyphCluster
+                // Console.WriteLine("\t" + "\tIsFirstGlyphCluster: {0}", isFirstGlyphCluster);
+                // // isLastGlyphCluster
+                // Console.WriteLine("\t" + "\tIsLastGlyphCluster: {0}", isLastGlyphCluster);
+                // // xOffset modifier
+                // Console.WriteLine("\t" + "\tX-offset modifier [scaled]: {0}", xOffset);
+                // Console.WriteLine("\t" + "\tX-advance: {0} (scaled: {1})", glyphPositions[i].XAdvance,
+                //     glyphPositions[i].XAdvance * scaleX);
+                // Console.WriteLine("\t" + "\tY-advance: {0} (scaled: {1})", glyphPositions[i].YAdvance,
+                //     glyphPositions[i].YAdvance * scaleY);
+                if (hasExtents)
+                {
+                    // Console.WriteLine("\t" + "\tExtents height: {0} (scaled: {1})", extents.Height,
+                    //     extents.Height * scaleY);
+                    // Console.WriteLine("\t" + "\tExtents width: {0} (scaled: {1})", extents.Width,
+                    //     extents.Width * scaleX);
+                    // // print lBearing and rBearing (both scaled)
+                    // Console.WriteLine("\t" + "\tExtents lBearing [scaled] {0}", lBearing);
+                    // Console.WriteLine("\t" + "\tExtents rBearing [scaled] {0}", rBearing);
+                }
+
+                // Console.WriteLine("\n");
 
                 xOffset += glyphPositions[i].XAdvance * scaleX;
                 yOffset += glyphPositions[i].YAdvance * scaleY;
@@ -184,6 +215,7 @@ namespace FossPDF.Drawing
 
             int BreakTextLeftToRight()
             {
+                // Console.WriteLine("Hello from BreakTextLeftToRight! We're breaking text from index: " + startIndex + " with max width: " + maxWidth);
                 var index = startIndex;
                 maxWidth += Glyphs[startIndex].Position.X;
 
@@ -191,9 +223,9 @@ namespace FossPDF.Drawing
                 {
                     var glyph = Glyphs[index];
                     var leftAdjust = (index == startIndex ? (glyph.LBearing ?? 0f) : 0f);
-                    var rightAdjust = (index == Glyphs.Length - 1 ? (glyph.RBearing ?? 0f) : 0f);
-                    if (glyph.Position.X + glyph.Width >
-                        maxWidth + Size.Epsilon + leftAdjust + rightAdjust)
+                    var rightAdjust = glyph.RBearing ?? 0f; // we won't know if we'll need this or not until we hit the end of the line
+                    if (glyph.Position.X + glyph.Width + leftAdjust + rightAdjust >
+                        maxWidth + Size.Epsilon)
                         break;
 
                     index++;
@@ -210,7 +242,12 @@ namespace FossPDF.Drawing
 
                 while (index < Glyphs.Length)
                 {
-                    if (startOffset - this[index].Position.X > maxWidth + Size.Epsilon)
+                    var glyph = Glyphs[index];
+                    var leftAdjust = glyph.LBearing ?? 0f; // we won't know if we'll need this or not until we hit the end of the line
+                    var rightAdjust = (index == Glyphs.Length-1 ? (glyph.RBearing ?? 0f) : 0f);
+
+
+                    if (startOffset - this[index].Position.X - leftAdjust - rightAdjust > maxWidth + Size.Epsilon)
                         break;
 
                     index++;
@@ -231,10 +268,10 @@ namespace FossPDF.Drawing
 
             var adjustX = 0;
             if (start.LBearing != null)
-                adjustX = (int)start.LBearing.Value;
+                adjustX -= (int)start.LBearing.Value;
 
             if (end.RBearing != null)
-                adjustX += (int)(end.RBearing);
+                adjustX -= (int)(end.RBearing);
 
             // sum the widths of each glyph
             var sum = 0f;
@@ -243,7 +280,7 @@ namespace FossPDF.Drawing
                 sum += this[i].Width;
             }
 
-            return sum;
+            return sum + adjustX;
         }
 
         public DrawTextCommand? PositionText(int startIndex, int endIndex, TextStyle textStyle)
@@ -278,6 +315,10 @@ namespace FossPDF.Drawing
                 : startIndex;
 
             var offsetAdjustX = this[firstVisualCharacterIndex].LBearing ?? 0;
+
+            // if we're in RTL mode, use the RBearing of the last char instead
+            if (Direction == Direction.RightToLeft)
+                offsetAdjustX = this[lastVisualCharacterIndex].RBearing ?? 0;
 
             var cmd = new DrawTextCommand
             {

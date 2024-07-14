@@ -1,3 +1,8 @@
+Version 2024.5.1:
+
+- Fixed: Use font metrics to ensure that characters line up along the left hand side boundary when stacked vertically
+- Improvement: add callback mechanism to allow for font-subsetting
+
 Version 2022.12.0:
 Feature: implemented LetterSpacing property for the Text element
 Improvement: the Text element API accepts now only string values, objects are not automatically converted anymore
