@@ -1,3 +1,12 @@
+Version 2024.5.3:
+
+- Fixed: Use font metrics to ensure that characters line up along the left hand side boundary when stacked vertically
+- Improvement: add callback mechanism to allow for font-subsetting
+
+Version 2024.5.2:
+
+- Fixed: Problems with word-wrapping
+
 Version 2024.5.1:
 
 - Fixed: Use font metrics to ensure that characters line up along the left hand side boundary when stacked vertically

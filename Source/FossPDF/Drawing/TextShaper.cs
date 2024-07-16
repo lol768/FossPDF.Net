@@ -185,14 +185,14 @@ namespace FossPDF.Drawing
             int BreakTextLeftToRight()
             {
                 var index = startIndex;
-                maxWidth += Glyphs[startIndex].Position.X;
+                maxWidth += Glyphs[startIndex].Position.X + (Glyphs[startIndex].LBearing ?? 0f);
 
                 while (index < Glyphs.Length)
                 {
                     var glyph = Glyphs[index];
                     var leftAdjust = (index == startIndex ? (glyph.LBearing ?? 0f) : 0f);
                     var rightAdjust = glyph.RBearing ?? 0f; // we won't know if we'll need this or not until we hit the end of the line
-                    if (glyph.Position.X + glyph.Width + leftAdjust + rightAdjust >
+                    if (glyph.Position.X + glyph.Width >
                         maxWidth + Size.Epsilon)
                         break;
 
@@ -234,14 +234,17 @@ namespace FossPDF.Drawing
             var end = this[endIndex];
 
 
-            var adjustX = 0;
+            var adjustX = 0f;
             if (start.LBearing != null)
-                adjustX -= (int)start.LBearing.Value;
+            {
+                adjustX -= start.LBearing.Value;
+            }
 
             if (end.RBearing != null)
-                adjustX -= (int)(end.RBearing);
+            {
+                adjustX += (end.RBearing.Value);
+            }
 
-            // sum the widths of each glyph
             var sum = 0f;
             for (var i = startIndex; i <= endIndex; i++)
             {
