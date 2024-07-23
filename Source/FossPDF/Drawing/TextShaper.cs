@@ -66,11 +66,11 @@ namespace FossPDF.Drawing
                     : null;
                 var widthAdjustment = 0f;
 
-                if (isFirstGlyphCluster)
-                {
-                    xOffset -= lBearing ?? 0;
-                    widthAdjustment = lBearing ?? 0;
-                }
+                // if (isFirstGlyphCluster)
+                // {
+                //     xOffset -= lBearing ?? 0;
+                //     widthAdjustment = lBearing ?? 0;
+                // }
 
                 // letter spacing should be applied between glyph clusters, not between individual glyphs,
                 // different cluster id indicates the end of the glyph cluster
@@ -84,10 +84,10 @@ namespace FossPDF.Drawing
                 bool isLastGlyphCluster = glyphInfos[i].Cluster == glyphInfos[length - 1].Cluster;
 
 
-                if (isLastGlyphCluster)
-                {
-                    widthAdjustment += rBearing ?? 0;
-                }
+                // if (isLastGlyphCluster)
+                // {
+                //     widthAdjustment += rBearing ?? 0;
+                // }
 
                 glyphs[i] = new ShapedGlyph
                 {
@@ -194,7 +194,9 @@ namespace FossPDF.Drawing
                     var rightAdjust = glyph.RBearing ?? 0f; // we won't know if we'll need this or not until we hit the end of the line
                     if (glyph.Position.X + glyph.Width >
                         maxWidth + Size.Epsilon)
+                    {
                         break;
+                    }
 
                     index++;
                 }
@@ -215,7 +217,7 @@ namespace FossPDF.Drawing
                     var rightAdjust = (index == Glyphs.Length-1 ? (glyph.RBearing ?? 0f) : 0f);
 
 
-                    if (startOffset - this[index].Position.X - leftAdjust - rightAdjust > maxWidth + Size.Epsilon)
+                    if (startOffset - this[index].Position.X > maxWidth + Size.Epsilon)
                         break;
 
                     index++;
@@ -225,25 +227,27 @@ namespace FossPDF.Drawing
             }
         }
 
-        public float MeasureWidth(int startIndex, int endIndex)
+        public record struct WidthResult
+        {
+            public float Width { get; set; }
+            public float FirstGlyphBearing { get; set; }
+            public float LastGlyphBearing { get; set; }
+        }
+
+        public WidthResult MeasureWidth(int startIndex, int endIndex)
         {
             if (Glyphs.Length == 0)
-                return 0;
+                return new WidthResult
+                {
+                    Width = 0,
+                    FirstGlyphBearing = 0,
+                    LastGlyphBearing = 0
+                };
 
             var start = this[startIndex];
             var end = this[endIndex];
 
 
-            var adjustX = 0f;
-            if (start.LBearing != null)
-            {
-                adjustX -= start.LBearing.Value;
-            }
-
-            if (end.RBearing != null)
-            {
-                adjustX += (end.RBearing.Value);
-            }
 
             var sum = 0f;
             for (var i = startIndex; i <= endIndex; i++)
@@ -251,7 +255,12 @@ namespace FossPDF.Drawing
                 sum += this[i].Width;
             }
 
-            return sum + adjustX;
+            return new WidthResult
+            {
+                Width = sum,
+                FirstGlyphBearing = start.LBearing ?? 0,
+                LastGlyphBearing = end.RBearing ?? 0
+            };
         }
 
         public DrawTextCommand? PositionText(int startIndex, int endIndex, TextStyle textStyle)

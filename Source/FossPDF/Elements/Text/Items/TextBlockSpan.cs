@@ -104,8 +104,9 @@ namespace FossPDF.Elements.Text.Items
 
             return new TextMeasurementResult
             {
-                Width = width,
-
+                Width = width.Width,
+                FirstGlyphBearing = width.FirstGlyphBearing,
+                LastGlyphBearing = width.LastGlyphBearing,
                 Ascent = fontMetrics.Ascent,
                 Descent = fontMetrics.Descent,
 

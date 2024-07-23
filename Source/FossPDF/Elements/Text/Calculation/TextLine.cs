@@ -11,12 +11,12 @@ namespace FossPDF.Elements.Text.Calculation
 
         public float TextHeight { get; private set; }
         public float LineHeight { get; private set; }
-        
+
         public float Ascent { get; private set; }
         public float Descent { get; private set; }
 
         public float Width { get; private set; }
-        
+
         public static TextLine From(ICollection<TextLineElement> elements)
         {
             if (elements.Count == 0)
@@ -26,21 +26,22 @@ namespace FossPDF.Elements.Text.Calculation
                     Elements = elements
                 };
             }
-            
+
             var textHeight = elements.Max(x => x.Measurement.Height);
             var lineHeight = elements.Max(x => x.Measurement.LineHeight * x.Measurement.Height);
-            
+
             return new TextLine
             {
                 Elements = elements,
-                
+
                 TextHeight = textHeight,
                 LineHeight = lineHeight,
-                
+
                 Ascent = elements.Min(x => x.Measurement.Ascent) - (lineHeight - textHeight) / 2,
                 Descent = elements.Max(x => x.Measurement.Descent) + (lineHeight - textHeight) / 2,
-                
-                Width = elements.Sum(x => x.Measurement.Width)
+
+                Width = elements.Sum(x => x.Measurement.Width) - elements.First().Measurement.FirstGlyphBearing
+                                                               - elements.Last().Measurement.LastGlyphBearing
             };
         }
     }
