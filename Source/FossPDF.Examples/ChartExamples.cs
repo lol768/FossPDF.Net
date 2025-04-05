@@ -45,7 +45,7 @@ namespace FossPDF.Examples
             RenderingTest
                 .Create()
                 .PageSize(400, 600)
-                .ProduceImages()
+                .ProduceSvg()
                 .ShowResults()
                 .Render(container =>
                 {

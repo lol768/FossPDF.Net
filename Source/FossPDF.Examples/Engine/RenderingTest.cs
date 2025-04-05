@@ -11,7 +11,8 @@ namespace FossPDF.Examples.Engine
     public enum RenderingTestResult
     {
         Pdf,
-        Images
+        Images,
+        Svg
     }
     
     public class RenderingTest
@@ -62,6 +63,12 @@ namespace FossPDF.Examples.Engine
         public RenderingTest ProduceImages()
         {
             ResultType = RenderingTestResult.Images;
+            return this;
+        }
+
+        public RenderingTest ProduceSvg()
+        {
+            ResultType = RenderingTestResult.Svg;
             return this;
         }
 
@@ -118,6 +125,15 @@ namespace FossPDF.Examples.Engine
                 Func<int, string> fileNameSchema = i => $"{FileNamePrefix}-${i}.png";
                 document.GenerateImages(fileNameSchema);
                 
+                if (ShowResult && ShowingResultsEnabled)
+                    Process.Start(fileExplorer, fileNameSchema(0));
+            }
+
+            if (ResultType == RenderingTestResult.Svg)
+            {
+                Func<int, string> fileNameSchema = i => $"{FileNamePrefix}-{i}.svg";
+                document.GenerateSvg(fileNameSchema);
+
                 if (ShowResult && ShowingResultsEnabled)
                     Process.Start(fileExplorer, fileNameSchema(0));
             }
