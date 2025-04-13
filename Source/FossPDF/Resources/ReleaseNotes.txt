@@ -1,3 +1,8 @@
+Version 2025.4.1:
+
+- Fixed: A number of issues where unmanaged memory wasn't being disposed properly.
+- Improvement: Target latest SkiaSharp.
+
 Version 2024.5.3:
 
 - Fixed: Use font metrics to ensure that characters line up along the left hand side boundary when stacked vertically
