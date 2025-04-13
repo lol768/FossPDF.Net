@@ -7,35 +7,39 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.13.9" />
-        <PackageReference Include="microcharts" Version="0.9.5.9" />
-        <PackageReference Include="nunit" Version="3.13.3" />
-        <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
-        <PackageReference Include="SkiaSharp" Version="2.88.6" />
-        <PackageReference Include="Svg.Skia" Version="1.0.0.3" />
-        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
-        <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0" />
+        <PackageReference Include="BenchmarkDotNet" Version="0.13.9"/>
+        <PackageReference Include="microcharts" Version="0.9.5.9"/>
+        <PackageReference Include="nunit" Version="3.13.3"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="4.5.0"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2"/>
+        <PackageReference Include="SkiaSharp" Version="3.119.0-preview.1.2"/>
+        <PackageReference Include="Svg.Skia" Version="1.0.0.3"/>
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.0-preview.1.2"/>
+        <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\FossPDF.PlatformUtils\FossPDF.PlatformUtils.csproj" />
-      <ProjectReference Include="..\FossPDF\FossPDF.csproj" />
+        <ProjectReference Include="..\FossPDF.PlatformUtils\FossPDF.PlatformUtils.csproj"/>
+        <ProjectReference Include="..\FossPDF\FossPDF.csproj"/>
     </ItemGroup>
 
+
     <ItemGroup>
-      <None Update="quo-vadis.txt">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="LibreBarcode39-Regular.ttf">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="logo.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="pdf-icon.svg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+        <None Update="quo-vadis.txt">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <EmbeddedResource Include="*.ttf">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </EmbeddedResource>
+        <None Update="LibreBarcode39-Regular.ttf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="logo.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="pdf-icon.svg">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

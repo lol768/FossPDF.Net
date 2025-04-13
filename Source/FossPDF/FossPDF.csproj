@@ -3,7 +3,7 @@
         <Authors>MarcinZiabek</Authors>
         <Company>CodeFlint</Company>
         <PackageId>FossPDF</PackageId>
-        <Version>2024.5.4</Version>
+        <Version>2025.4.1</Version>
         <PackageDescription>FossPDF is an open-source, modern and battle-tested library that can help you with generating PDF documents by offering friendly, discoverable and predictable C# fluent API. Easily generate PDF reports, invoices, exports, etc.</PackageDescription>
         <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/Resources/ReleaseNotes.txt"))</PackageReleaseNotes>
         <LangVersion>10</LangVersion>
@@ -20,11 +20,13 @@
         <TargetFrameworks>netstandard2.1;net8.0</TargetFrameworks>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="SkiaSharp" Version="2.88.6" />
-      <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.88.6" />
+      <PackageReference Include="SkiaSharp" Version="3.119.0-preview.1.2" />
+      <PackageReference Include="SkiaSharp.HarfBuzz" Version="3.119.0-preview.1.2" />
+      <PackageReference Include="IDisposableAnalyzers" Version="4.0.8" />
       <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         <PrivateAssets>all</PrivateAssets>

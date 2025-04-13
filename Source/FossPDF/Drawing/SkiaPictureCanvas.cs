@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using FossPDF.Helpers;
@@ -18,14 +19,16 @@ namespace FossPDF.Drawing
             Size = size;
         }
     }
-    
-    internal class SkiaPictureCanvas : SkiaCanvasBase
+
+    internal class SkiaPictureCanvas : SkiaCanvasBase, IDisposable
     {
+        private bool _disposed;
+
         private SKPictureRecorder? PictureRecorder { get; set; }
         private Size? CurrentPageSize { get; set; }
 
         public ICollection<PreviewerPicture> Pictures { get; } = new List<PreviewerPicture>();
-        
+
         public override void BeginDocument()
         {
             Pictures.Clear();
@@ -34,15 +37,16 @@ namespace FossPDF.Drawing
         public override void BeginPage(Size size)
         {
             CurrentPageSize = size;
+            PictureRecorder?.Dispose();
             PictureRecorder = new SKPictureRecorder();
-
+            Canvas?.Dispose();
             Canvas = PictureRecorder.BeginRecording(new SKRect(0, 0, size.Width, size.Height));
         }
 
         public override void EndPage()
         {
-            var picture = PictureRecorder?.EndRecording();
-            
+            using var picture = PictureRecorder?.EndRecording();
+
             if (picture != null && CurrentPageSize.HasValue)
                 Pictures.Add(new PreviewerPicture(picture, CurrentPageSize.Value));
 
@@ -50,6 +54,28 @@ namespace FossPDF.Drawing
             PictureRecorder = null;
         }
 
-        public override void EndDocument() { }
+        public override void EndDocument()
+        {
+            Canvas?.Dispose();
+        }
+
+        public virtual void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            PictureRecorder?.Dispose();
+            _disposed = true;
+        }
+
+        protected virtual void ThrowIfDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+        }
     }
 }

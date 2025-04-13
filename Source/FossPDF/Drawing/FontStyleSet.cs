@@ -5,7 +5,7 @@ using SkiaSharp;
 
 namespace FossPDF.Drawing
 {
-    public class FontStyleSet
+    public class FontStyleSet : IDisposable
     {
         private ConcurrentDictionary<SKFontStyle, SKTypeface> Styles { get; } = new();
 
@@ -43,10 +43,10 @@ namespace FossPDF.Drawing
         internal static bool IsBetterMatch(SKFontStyle? target, SKFontStyle? a, SKFontStyle? b)
         {
             // A font is better than no font
-            if (b == null) 
+            if (b == null)
                 return true;
-            
-            if (a == null) 
+
+            if (a == null)
                 return false;
 
             // First check font width
@@ -54,18 +54,18 @@ namespace FossPDF.Drawing
             // For expanded widths prefer larger widths
             if (target.Width <= (int)SKFontStyleWidth.Normal)
             {
-                if (a.Width <= target.Width && b.Width > target.Width) 
+                if (a.Width <= target.Width && b.Width > target.Width)
                     return true;
-                
-                if (a.Width > target.Width && b.Width <= target.Width) 
+
+                if (a.Width > target.Width && b.Width <= target.Width)
                     return false;
             }
             else
             {
-                if (a.Width >= target.Width && b.Width < target.Width) 
+                if (a.Width >= target.Width && b.Width < target.Width)
                     return true;
-                
-                if (a.Width < target.Width && b.Width >= target.Width) 
+
+                if (a.Width < target.Width && b.Width >= target.Width)
                     return false;
             }
 
@@ -73,10 +73,10 @@ namespace FossPDF.Drawing
             var widthDifferenceA = Math.Abs(a.Width - target.Width);
             var widthDifferenceB = Math.Abs(b.Width - target.Width);
 
-            if (widthDifferenceA < widthDifferenceB) 
+            if (widthDifferenceA < widthDifferenceB)
                 return true;
-            
-            if (widthDifferenceB < widthDifferenceA) 
+
+            if (widthDifferenceB < widthDifferenceA)
                 return false;
 
             // Prefer closest slant based on provided fallback list
@@ -84,10 +84,10 @@ namespace FossPDF.Drawing
             var slantIndexA = slantFallback.IndexOf(a.Slant);
             var slantIndexB = slantFallback.IndexOf(b.Slant);
 
-            if (slantIndexA < slantIndexB) 
+            if (slantIndexA < slantIndexB)
                 return true;
-            
-            if (slantIndexB < slantIndexA) 
+
+            if (slantIndexB < slantIndexA)
                 return false;
 
             // Check weight last
@@ -98,27 +98,27 @@ namespace FossPDF.Drawing
 
             if (target.Weight >= 400 && target.Weight <= 500)
             {
-                if ((a.Weight >= 400 && a.Weight <= 500) && !(b.Weight >= 400 && b.Weight <= 500)) 
+                if ((a.Weight >= 400 && a.Weight <= 500) && !(b.Weight >= 400 && b.Weight <= 500))
                     return true;
-                
-                if (!(a.Weight >= 400 && a.Weight <= 500) && (b.Weight >= 400 && b.Weight <= 500)) 
+
+                if (!(a.Weight >= 400 && a.Weight <= 500) && (b.Weight >= 400 && b.Weight <= 500))
                     return false;
             }
 
             if (target.Weight < 450)
             {
-                if (a.Weight <= target.Weight && b.Weight > target.Weight) 
+                if (a.Weight <= target.Weight && b.Weight > target.Weight)
                     return true;
-                
+
                 if (a.Weight > target.Weight && b.Weight <= target.Weight)
                     return false;
             }
             else
             {
-                if (a.Weight >= target.Weight && b.Weight < target.Weight) 
+                if (a.Weight >= target.Weight && b.Weight < target.Weight)
                     return true;
-                
-                if (a.Weight < target.Weight && b.Weight >= target.Weight) 
+
+                if (a.Weight < target.Weight && b.Weight >= target.Weight)
                     return false;
             }
 
@@ -128,5 +128,15 @@ namespace FossPDF.Drawing
 
             return weightDifferenceA < weightDifferenceB;
         }
+
+        public void Dispose()
+        {
+            foreach (var kvp in Styles)
+            {
+                kvp.Value.Dispose();
+                kvp.Key.Dispose(); // note they both have their own finalizers
+            }
+        }
+
     }
 }

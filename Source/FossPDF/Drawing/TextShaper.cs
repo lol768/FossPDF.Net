@@ -14,7 +14,6 @@ namespace FossPDF.Drawing
 
         private TextStyle TextStyle { get; }
 
-        private SKFont Font => _fontManager.ToFont(TextStyle);
         private Font ShaperFont => _fontManager.ToShaperFont(TextStyle);
         private SKPaint Paint => _fontManager.ToPaint(TextStyle);
 

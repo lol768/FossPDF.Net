@@ -4,7 +4,7 @@
         <Authors>MarcinZiabek</Authors>
         <Company>CodeFlint</Company>
         <PackageId>FossPDF.Previewer</PackageId>
-        <Version>2022.12.1</Version>
+        <Version>2025.4.1</Version>
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>FossPDF-previewer</ToolCommandName>
         <PackageDescription>FossPDF is a fork of QuestPDF at the last commit that was still FOSS. An open-source, modern and battle-tested library that can help you with generating PDF documents by offering friendly, discoverable and predictable C# fluent API.</PackageDescription>
@@ -34,7 +34,7 @@
         <None Include="Resources\Logo.png" Pack="true" PackagePath="\" />
         <None Include="Resources\PackageReadme.md" Pack="true" PackagePath="\" />
     </ItemGroup>
-    
+
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="Avalonia.Desktop" Version="11.0.5" />
@@ -42,9 +42,9 @@
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.5" />
         <PackageReference Include="Avalonia.Skia" Version="11.0.5" />
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.5" />
-        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
-        <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="2.88.6" />
-        <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="2.88.6" />
-        <PackageReference Include="SkiaSharp" Version="2.88.6" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.0-preview.1.2" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.0-preview.1.2" />
+        <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="3.119.0-preview.1.2" />
+        <PackageReference Include="SkiaSharp" Version="3.119.0-preview.1.2" />
     </ItemGroup>
 </Project>

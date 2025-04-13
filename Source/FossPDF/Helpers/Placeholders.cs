@@ -11,9 +11,9 @@ namespace FossPDF.Helpers
         {
             NativeDependencyCompatibilityChecker.Test();
         }
-        
+
         public static readonly Random Random = new Random();
-        
+
         #region Word Cache
 
         private const string CommonParagraph =
@@ -57,7 +57,7 @@ namespace FossPDF.Helpers
             "eos", "alias", "dolore", "tenetur", "deleniti", "porro", "facere",
             "maxime", "corrupti"
         };
-        
+
         private static readonly string[] LongLatinWords = LatinWords.Where(x => x.Length > 8).ToArray();
 
         #endregion
@@ -69,7 +69,7 @@ namespace FossPDF.Helpers
             var index = Random.Next(0, LatinWords.Length);
             return LatinWords[index];
         }
-        
+
         private static string LongRandomWord()
         {
             var index = Random.Next(0, LongLatinWords.Length);
@@ -88,7 +88,7 @@ namespace FossPDF.Helpers
         }
 
         public static string LoremIpsum() => CommonParagraph;
-        
+
         public static string Label() => RandomWords(2, 3).FirstCharToUpper();
         public static string Sentence() => RandomWords(6, 12).FirstCharToUpper() + ".";
         public static string Question() => RandomWords(4, 8).FirstCharToUpper() + "?";
@@ -103,7 +103,7 @@ namespace FossPDF.Helpers
 
             return string.Join(" ", sentences);
         }
-        
+
         public static string Paragraphs()
         {
             var length = Random.Next(2, 5);
@@ -114,7 +114,7 @@ namespace FossPDF.Helpers
 
             return string.Join("\n", sentences);
         }
-        
+
         public static string Email()
         {
             return $"{LongRandomWord()}{Random.Next(10, 99)}@{LongRandomWord()}.com";
@@ -124,19 +124,19 @@ namespace FossPDF.Helpers
         {
             return LongRandomWord().FirstCharToUpper() + " " + LongRandomWord().FirstCharToUpper();
         }
-        
+
         public static string PhoneNumber()
         {
             return $"{Random.Next(100, 999)}-{Random.Next(100, 999)}-{Random.Next(1000, 9999)}";
         }
-        
+
         private static string FirstCharToUpper(this string text)
         {
             return text.First().ToString().ToUpper() + text.Substring(1);
         }
 
         #endregion
-        
+
         #region Time
 
         private static DateTime RandomDate() => System.DateTime.Now - TimeSpan.FromDays(Random.NextDouble());
@@ -180,13 +180,13 @@ namespace FossPDF.Helpers
             Colors.Grey.Lighten3,
             Colors.BlueGrey.Lighten3
         };
-        
+
         public static string BackgroundColor()
         {
             var index = Random.Next(0, BackgroundColors.Length);
             return BackgroundColors[index];
         }
-        
+
         public static string Color()
         {
             var colors = new[]
@@ -220,7 +220,7 @@ namespace FossPDF.Helpers
         {
             return Image(new Size(width, height));
         }
-        
+
         public static byte[] Image(Size size)
         {
             // shuffle corner positions
@@ -231,27 +231,27 @@ namespace FossPDF.Helpers
                 new SKPoint(0, size.Height),
                 new SKPoint(size.Width, size.Height)
             };
-            
+
             var positions = targetPositions
                 .OrderBy(x => Random.Next())
                 .ToList();
-            
+
             // rand and shuffle colors
             var colors = BackgroundColors
                 .OrderBy(x => Random.Next())
                 .Take(4)
                 .Select(SKColor.Parse)
                 .ToArray();
-            
+
             // create image with white background
             var imageInfo = new SKImageInfo((int)size.Width, (int)size.Height);
             using var surface = SKSurface.Create(imageInfo);
-   
+
             using var backgroundPaint = new SKPaint
             {
                 Color = SKColors.White
             };
-            
+
             surface.Canvas.DrawRect(0, 0, size.Width, size.Height, backgroundPaint);
 
             // draw gradient
@@ -259,27 +259,35 @@ namespace FossPDF.Helpers
             {
                 var radius = Math.Max(size.Width, size.Height);
                 var color = colors[index];
-                
+
                 return SKShader.CreateRadialGradient(
                     positions[index], radius,
                     new[] {color, color.WithAlpha(0)}, new[] {0, 1f},
                     SKShaderTileMode.Decal);
             }
-            
+
+            using var foregroundShader1 = GetForegroundShader(0);
+            using var foregroundShader2 = GetForegroundShader(1);
+            using var foregroundShader3 = GetForegroundShader(2);
+            using var foregroundShader4 = GetForegroundShader(3);
+            using var skShader1 = SKShader.CreateCompose(foregroundShader1, foregroundShader2);
+            using var skShader2 = SKShader.CreateCompose(foregroundShader3, foregroundShader4);
             using var shaderPaint = new SKPaint
             {
                 Shader = SKShader.CreateCompose(
-                    SKShader.CreateCompose(GetForegroundShader(0), GetForegroundShader(1)),
-                    SKShader.CreateCompose(GetForegroundShader(2), GetForegroundShader(3)))
+                    skShader1,
+                    skShader2)
             };
-            
+
             surface.Canvas.DrawRect(0, 0, size.Width, size.Height, shaderPaint);
-            
+
             // return result as an image
             surface.Canvas.Save();
-            return surface.Snapshot().Encode(SKEncodedImageFormat.Jpeg, 90).ToArray();
+            using var skImage = surface.Snapshot();
+            using var skData = skImage.Encode(SKEncodedImageFormat.Jpeg, 90);
+            return skData.ToArray();
         }
-        
+
         #endregion
     }
 }

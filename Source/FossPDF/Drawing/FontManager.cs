@@ -138,7 +138,6 @@ namespace FossPDF.Drawing
                 ShaperFonts = new ConcurrentDictionary<TextStyle, Font>(ShaperFonts),
                 Fonts = new ConcurrentDictionary<TextStyle, SKFont>(Fonts),
                 TextShapers = new ConcurrentDictionary<TextStyle, TextShaper>(TextShapers),
-                ColorPaints = new ConcurrentDictionary<string, SKPaint>(ColorPaints),
                 SubsetCallback = _subsetCallback
             };
         }

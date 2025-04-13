@@ -61,15 +61,15 @@ namespace FossPDF.Elements.Text.Items
             var textShaper = request.PageContext.FontManager.ToTextShaper(Style);
             TextShapingResult ??= textShaper.Shape(Text);
 
-            var paint = request.PageContext.FontManager.ToPaint(Style);
             var fontMetrics = request.PageContext.FontManager.ToFontMetrics(Style);
-            SpaceCodepoint ??= paint.ToFont().Typeface.GetGlyphs(" ")[0];
+            var paintAsFont = request.PageContext.FontManager.ToFont(Style);
+            SpaceCodepoint ??= paintAsFont.Typeface.GetGlyphs(" ")[0];
 
             var startIndex = request.StartIndex;
 
             // if the element is the first one within the line,
             // ignore leading spaces
-            if (!request.IsFirstElementInBlock && request.IsFirstElementInLine)
+            if (request is { IsFirstElementInBlock: false, IsFirstElementInLine: true })
             {
                 while (startIndex < TextShapingResult.Length && Text[startIndex] == SpaceCodepoint)
                     startIndex++;
@@ -191,7 +191,10 @@ namespace FossPDF.Elements.Text.Items
                 request.Canvas.DrawRectangle(new Position(0, request.TotalAscent), new Size(request.TextSize.Width, request.TextSize.Height), Style.BackgroundColor);
 
             if (textDrawingCommand.HasValue)
+            {
                 request.Canvas.DrawText(textDrawingCommand.Value.SkTextBlob, new Position(textDrawingCommand.Value.TextOffsetX, glyphOffsetY), Style, request.PageContext.FontManager);
+                textDrawingCommand.Value.SkTextBlob.Dispose();
+            }
 
             // draw underline
             if (Style.HasUnderline ?? false)

@@ -16,23 +16,28 @@ namespace FossPDF.Drawing
     {
         public string Tag { get; set; }
         public ConcurrentDictionary<string, FontStyleSet> StyleSets { get; init; }
-        public ConcurrentDictionary<TextStyle, FontMetrics> FontMetrics { get; init; }
-        public ConcurrentDictionary<TextStyle, SKPaint> FontPaints { get; init; }
-        public ConcurrentDictionary<string, SKPaint> ColorPaints { get; init; }
-        public ConcurrentDictionary<TextStyle, Font> ShaperFonts { get; init; }
-        public ConcurrentDictionary<TextStyle, SKFont> Fonts { get; init; }
-        public ConcurrentDictionary<TextStyle, TextShaper> TextShapers { get; init; }
+        public ConcurrentDictionary<TextStyle, FontMetrics> FontMetrics { get; init; } // Managed
+        public ConcurrentDictionary<TextStyle, SKPaint> FontPaints { get; init; } // unmanaged
+        public ConcurrentDictionary<TextStyle, Font> ShaperFonts { get; init; } // unmanaged
+        public ConcurrentDictionary<TextStyle, SKFont> Fonts { get; init; } // unmanaged
+        public ConcurrentDictionary<TextStyle, TextShaper> TextShapers { get; init; } // contains unmanaged refs, but disposed using above
         public Action<DocumentSpecificFontManager, IEnumerable<FontToBeSubset>>? SubsetCallback { get; init; }
+
+        public ConcurrentBag<IDisposable> SafeToDisposeAtSubsetTime { get; init; } = new();
 
         public void ClearCacheReadyForSubsets()
         {
+            foreach (var disposable in SafeToDisposeAtSubsetTime)
+            {
+                disposable.Dispose();
+            }
             StyleSets.Clear();
             FontMetrics.Clear();
             FontPaints.Clear();
             ShaperFonts.Clear();
             Fonts.Clear();
             TextShapers.Clear();
-            RegisterLibraryDefaultFonts();
+            // RegisterLibraryDefaultFonts();
         }
 
         private void RegisterFontType(SKData fontData, string? customName = null)
@@ -46,7 +51,13 @@ namespace FossPDF.Drawing
 
                 var typefaceName = customName ?? typeface.FamilyName;
 
-                var fontStyleSet = StyleSets.GetOrAdd(typefaceName, _ => new FontStyleSet());
+                var fontStyleSet = StyleSets.GetOrAdd(typefaceName, _ =>
+                {
+
+                    var styleSet = new FontStyleSet();
+                    SafeToDisposeAtSubsetTime.Add(styleSet);
+                    return styleSet;
+                });
                 fontStyleSet.Add(typeface);
             }
         }
@@ -105,57 +116,28 @@ namespace FossPDF.Drawing
 
         internal SKPaint ToPaint(TextStyle style)
         {
-            return FontPaints.GetOrAdd(style, Convert);
-
-            SKPaint Convert(TextStyle style)
+            // Danger Will Robinson!
+            // Note that _some_ of our FontPaints will have been copied over
+            // from the original (non-document-specific FontManager).
+            // It's crucial that we don't dispose of those, because they'll be used for the next document.
+            // But, objects like these that we are creating below _do_ need to be eligible for disposal.
+            return FontPaints.GetOrAdd(style, style1 =>
             {
-                var targetTypeface = GetTypeface(style);
+                var targetTypeface = GetTypeface(style1);
 
-                return new SKPaint
+                var paint = new SKPaint
                 {
-                    Color = SKColor.Parse(style.Color),
+                    Color = SKColor.Parse(style1.Color),
                     Typeface = targetTypeface,
-                    TextSize = (style.Size ?? 12) * GetTextScale(style),
+                    TextSize = (style1.Size ?? 12) * GetTextScale(style1),
                     IsAntialias = true,
-                    TextSkewX = GetTextSkew(style, targetTypeface),
-                    FakeBoldText = UseFakeBoldText(style, targetTypeface)
+                    TextSkewX = GetTextSkew(style1, targetTypeface),
+                    FakeBoldText = UseFakeBoldText(style1, targetTypeface)
                 };
-            }
+                SafeToDisposeAtSubsetTime.Add(paint);
+                return paint;
 
-            SKTypeface GetTypeface(TextStyle style)
-            {
-                var weight = (SKFontStyleWeight)(style.FontWeight ?? FontWeight.Normal);
-
-                // superscript and subscript use slightly bolder font to match visually line thickness
-                if (style.FontPosition is FontPosition.Superscript or FontPosition.Subscript)
-                {
-                    var weightValue = (int)weight;
-                    weightValue = Math.Min(weightValue + 100, 1000);
-
-                    weight = (SKFontStyleWeight)(weightValue);
-                }
-
-                var slant = (style.IsItalic ?? false) ? SKFontStyleSlant.Italic : SKFontStyleSlant.Upright;
-
-                var fontStyle = new SKFontStyle(weight, SKFontStyleWidth.Normal, slant);
-
-                if (StyleSets.TryGetValue(style.FontFamily, out var fontStyleSet))
-                    return fontStyleSet.Match(fontStyle);
-
-                var fontFromDefaultSource = SKFontManager.Default.MatchFamily(style.FontFamily, fontStyle);
-
-                if (fontFromDefaultSource != null)
-                    return fontFromDefaultSource;
-
-                var availableFontNames = string.Join(", ", SKFontManager.Default.GetFontFamilies());
-
-                throw new ArgumentException(
-                    $"The typeface '{style.FontFamily}' could not be found. " +
-                    $"Please consider the following options: " +
-                    $"1) install the font on your operating system or execution environment. " +
-                    $"2) load a font file specifically for FossPDF usage via the FossPDF.Drawing.FontManager.RegisterFontType(Stream fileContentStream) static method. " +
-                    $"Available font family names: [{availableFontNames}]");
-            }
+            });
 
             static float GetTextScale(TextStyle style)
             {
@@ -179,8 +161,53 @@ namespace FossPDF.Drawing
             static bool UseFakeBoldText(TextStyle originalTextStyle, SKTypeface targetTypeface)
             {
                 // requested bold text but got typeface that is not bold
-                return originalTextStyle.FontWeight > FontWeight.Medium && !targetTypeface.IsBold;
+                using var targetTypeFaceStyle = targetTypeface.FontStyle;
+                var isBold = targetTypeFaceStyle.Weight >= (int)SKFontStyleWeight.SemiBold;
+                return originalTextStyle.FontWeight > FontWeight.Medium && !isBold;
             }
+        }
+
+        private SKTypeface GetTypeface(TextStyle style)
+        {
+            var weight = (SKFontStyleWeight)(style.FontWeight ?? FontWeight.Normal);
+
+            // superscript and subscript use slightly bolder font to match visually line thickness
+            if (style.FontPosition is FontPosition.Superscript or FontPosition.Subscript)
+            {
+                var weightValue = (int)weight;
+                weightValue = Math.Min(weightValue + 100, 1000);
+
+                weight = (SKFontStyleWeight)(weightValue);
+            }
+
+            var slant = (style.IsItalic ?? false) ? SKFontStyleSlant.Italic : SKFontStyleSlant.Upright;
+
+            using var fontStyle = new SKFontStyle(weight, SKFontStyleWidth.Normal, slant);
+
+            if (StyleSets.TryGetValue(style.FontFamily, out var fontStyleSet))
+            {
+                Console.WriteLine("Using font family " + style.FontFamily + " from StyleSets with weight " + weight + " and slant " + slant + " and style " + fontStyle);
+                return fontStyleSet.Match(fontStyle);
+            }
+
+            Console.WriteLine("FALLBACK Using Default with weight " + weight + " and slant " + slant + " and style " + fontStyle);
+
+            var fontFromDefaultSource = SKFontManager.Default.MatchFamily(style.FontFamily, fontStyle);
+
+            if (fontFromDefaultSource != null)
+            {
+                Console.WriteLine("Cannot be null?");
+                return fontFromDefaultSource;
+            }
+
+            var availableFontNames = string.Join(", ", SKFontManager.Default.GetFontFamilies());
+
+            throw new ArgumentException(
+                $"The typeface '{style.FontFamily}' could not be found. " +
+                $"Please consider the following options: " +
+                $"1) install the font on your operating system or execution environment. " +
+                $"2) load a font file specifically for FossPDF usage via the FossPDF.Drawing.FontManager.RegisterFontType(Stream fileContentStream) static method. " +
+                $"Available font family names: [{availableFontNames}]");
         }
 
         internal FontMetrics ToFontMetrics(TextStyle style)
@@ -230,9 +257,10 @@ namespace FossPDF.Drawing
         {
             return ShaperFonts.GetOrAdd(style, key =>
             {
-                var typeface = ToPaint(key).Typeface;
+                var typeface = ToFont(key).Typeface;
 
-                using var harfBuzzBlob = typeface.OpenStream(out var ttcIndex).ToHarfBuzzBlob();
+                using var typefaceStream = typeface.OpenStream(out var ttcIndex);
+                using var harfBuzzBlob = typefaceStream.ToHarfBuzzBlob();
 
                 using var face = new Face(harfBuzzBlob, ttcIndex)
                 {
@@ -242,6 +270,7 @@ namespace FossPDF.Drawing
                 };
 
                 var font = new Font(face);
+                SafeToDisposeAtSubsetTime.Add(font);
                 font.SetScale(TextShaper.FontShapingScale, TextShaper.FontShapingScale);
                 font.SetFunctionsOpenType();
 
@@ -256,19 +285,56 @@ namespace FossPDF.Drawing
 
         public SKFont ToFont(TextStyle style)
         {
-            return Fonts.GetOrAdd(style, key => ToPaint(key).ToFont());
+            var thisDocumentSpecificFontManager = this;
+            // get memory address of thisDocumentSpecificFontManager
+
+            return Fonts.GetOrAdd(style, key =>
+            {
+                #pragma warning disable IDISP001
+                var font = ToPaint(key).ToFont();
+                #pragma warning restore IDISP001
+                SafeToDisposeAtSubsetTime.Add(font);
+                return font;
+            });
         }
 
-        public void DisposeAll()
+        public void DisposeAll(bool includeStyleSets=true)
         {
+            Console.WriteLine("Hello from DisposeAll");
+            // print number of FontPaints, Fonts, ShaperFonts, TextShapers etc
+            Console.WriteLine($"FontPaints: {FontPaints.Count}");
+            Console.WriteLine($"Fonts: {Fonts.Count}");
+            Console.WriteLine($"ShaperFonts: {ShaperFonts.Count}");
+            Console.WriteLine($"TextShapers: {TextShapers.Count}");
+            Console.WriteLine($"FontMetrics: {FontMetrics.Count}");
+            Console.WriteLine($"StyleSets: {StyleSets.Count}");
+
             foreach (var paint in FontPaints.Values)
+            {
                 paint.Dispose();
+            }
 
             foreach (var font in Fonts.Values)
             {
                 font.Typeface.Dispose();
                 font.Dispose();
             }
+
+            foreach (var shaperFont in ShaperFonts.Values)
+            {
+                shaperFont.Dispose();
+            }
+
+            if (includeStyleSets)
+            {
+                foreach (var styleSet in StyleSets.Values)
+                {
+                    styleSet.Dispose();
+                }
+            }
+
+            ClearCacheReadyForSubsets();
+
         }
     }
 }

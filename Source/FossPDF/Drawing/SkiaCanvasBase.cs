@@ -41,17 +41,17 @@ namespace FossPDF.Drawing
 
         public void DrawHyperlink(string url, Size size)
         {
-            Canvas.DrawUrlAnnotation(new SKRect(0, 0, size.Width, size.Height), url);
+            Canvas.DrawUrlAnnotation(new SKRect(0, 0, size.Width, size.Height), url).Dispose();
         }
 
         public void DrawSectionLink(string sectionName, Size size)
         {
-            Canvas.DrawLinkDestinationAnnotation(new SKRect(0, 0, size.Width, size.Height), sectionName);
+            Canvas.DrawLinkDestinationAnnotation(new SKRect(0, 0, size.Width, size.Height), sectionName).Dispose();
         }
 
         public void DrawSection(string sectionName)
         {
-            Canvas.DrawNamedDestinationAnnotation(new SKPoint(0, 0), sectionName);
+            Canvas.DrawNamedDestinationAnnotation(new SKPoint(0, 0), sectionName).Dispose();
         }
 
         public void Rotate(float angle)
