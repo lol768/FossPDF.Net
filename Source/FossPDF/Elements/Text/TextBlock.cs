@@ -5,6 +5,7 @@ using FossPDF.Drawing;
 using FossPDF.Elements.Text.Calculation;
 using FossPDF.Elements.Text.Items;
 using FossPDF.Infrastructure;
+using HarfBuzzSharp;
 
 namespace FossPDF.Elements.Text
 {
@@ -102,13 +103,13 @@ namespace FossPDF.Elements.Text
                 return;
 
             var topOffset = 0f;
-
             foreach (var line in lines)
             {
-                var leftOffset = GetAlignmentOffset(line.Width);
 
+                var leftOffset = 0f;
                 foreach (var item in line.Elements.Where(x => x.Measurement.Width > 0.0))
                 {
+                    var itemOffset = GetItemAlignmentOffset(item.Measurement);
                     var textDrawingRequest = new TextDrawingRequest
                     {
                         Canvas = Canvas,
@@ -122,8 +123,8 @@ namespace FossPDF.Elements.Text
                     };
 
                     var canvasOffset = ContentDirection == ContentDirection.LeftToRight
-                        ? new Position(leftOffset, topOffset - line.Ascent)
-                        : new Position(availableSpace.Width - leftOffset - item.Measurement.Width, topOffset - line.Ascent);
+                        ? new Position(leftOffset + itemOffset, topOffset - line.Ascent)
+                        : new Position(availableSpace.Width - leftOffset - item.Measurement.Width + itemOffset, topOffset - line.Ascent);
 
                     Canvas.Translate(canvasOffset);
                     item.Item.Draw(textDrawingRequest);
@@ -149,15 +150,26 @@ namespace FossPDF.Elements.Text
             if (!RenderingQueue.Any())
                 ResetState();
 
-            float GetAlignmentOffset(float lineWidth)
+            float GetItemAlignmentOffset(TextMeasurementResult measurement)
             {
-                var emptySpace = availableSpace.Width - lineWidth;
+                var visualWidth = measurement.Width
+                                  - measurement.FirstGlyphBearing
+                                  + measurement.LastGlyphBearing;
+
+                var emptySpace = availableSpace.Width - visualWidth;
 
                 return Alignment switch
                 {
-                    HorizontalAlignment.Left => ContentDirection == ContentDirection.LeftToRight ? 0 : emptySpace,
-                    HorizontalAlignment.Center => emptySpace / 2,
-                    HorizontalAlignment.Right => ContentDirection == ContentDirection.LeftToRight ? emptySpace : 0,
+                    HorizontalAlignment.Left => ContentDirection == ContentDirection.LeftToRight
+                        ? -measurement.FirstGlyphBearing
+                        : emptySpace + measurement.FirstGlyphBearing,
+
+                    HorizontalAlignment.Right => ContentDirection == ContentDirection.LeftToRight
+                        ? emptySpace - measurement.FirstGlyphBearing
+                        : -measurement.FirstGlyphBearing,
+
+                    HorizontalAlignment.Center => (emptySpace / 2) - measurement.FirstGlyphBearing,
+
                     _ => 0
                 };
             }

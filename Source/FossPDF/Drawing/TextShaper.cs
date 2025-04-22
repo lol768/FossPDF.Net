@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using HarfBuzzSharp;
 using FossPDF.Infrastructure;
@@ -63,7 +65,6 @@ namespace FossPDF.Drawing
                 float? rBearing = hasExtents
                     ? scaleX * (glyphPositions[i].XAdvance - (extents.Width + extents.XBearing))
                     : null;
-                var widthAdjustment = 0f;
 
                 // if (isFirstGlyphCluster)
                 // {
@@ -80,20 +81,12 @@ namespace FossPDF.Drawing
                     xOffset += letterSpacing;
                 }
 
-                bool isLastGlyphCluster = glyphInfos[i].Cluster == glyphInfos[length - 1].Cluster;
-
-
-                // if (isLastGlyphCluster)
-                // {
-                //     widthAdjustment += rBearing ?? 0;
-                // }
-
                 glyphs[i] = new ShapedGlyph
                 {
                     Codepoint = (ushort)glyphInfos[i].Codepoint,
                     Position = new SKPoint(xOffset + glyphPositions[i].XOffset * scaleX,
                         yOffset - glyphPositions[i].YOffset * scaleY),
-                    Width = glyphPositions[i].XAdvance * scaleX - widthAdjustment,
+                    Width = glyphPositions[i].XAdvance * scaleX,
                     LBearing = lBearing,
                     RBearing = rBearing,
                 };
@@ -144,10 +137,9 @@ namespace FossPDF.Drawing
     public struct DrawTextCommand
     {
         public SKTextBlob SkTextBlob;
-        public float TextOffsetX;
     }
 
-    public class TextShapingResult
+    public class TextShapingResult : IEnumerable<ShapedGlyph>
     {
         private Direction Direction { get; }
         private ShapedGlyph[] Glyphs { get; }
@@ -270,19 +262,26 @@ namespace FossPDF.Drawing
             if (startIndex > endIndex)
                 return null;
 
+            // renormalise the fuckers
+            var minX = Glyphs[startIndex..(endIndex + 1)]
+                .Min(g => g.Position.X);
+
+
             using var skTextBlobBuilder = new SKTextBlobBuilder();
 
             var positionedRunBuffer =
                 skTextBlobBuilder.AllocatePositionedRun(FontManager.ToFont(textStyle), endIndex - startIndex + 1);
-            var glyphSpan = positionedRunBuffer.GetGlyphSpan();
-            var positionSpan = positionedRunBuffer.GetPositionSpan();
+            var glyphSpan = positionedRunBuffer.Glyphs;
+            var positionSpan = positionedRunBuffer.Positions;
 
             for (var sourceIndex = startIndex; sourceIndex <= endIndex; sourceIndex++)
             {
                 var runIndex = sourceIndex - startIndex;
 
                 glyphSpan[runIndex] = this[sourceIndex].Codepoint;
-                positionSpan[runIndex] = this[sourceIndex].Position;
+                positionSpan[runIndex] = new SKPoint(
+                    this[sourceIndex].Position.X - minX,
+                    this[sourceIndex].Position.Y);
             }
 
             var firstVisualCharacterIndex = Direction == Direction.LeftToRight
@@ -293,22 +292,29 @@ namespace FossPDF.Drawing
                 ? endIndex
                 : startIndex;
 
-            var offsetAdjustX = this[firstVisualCharacterIndex].LBearing ?? 0;
-
-            // if we're in RTL mode, use the RBearing of the last char instead
-            if (Direction == Direction.RightToLeft)
-                offsetAdjustX = this[lastVisualCharacterIndex].RBearing ?? 0;
-
             var cmd = new DrawTextCommand
             {
                 SkTextBlob = skTextBlobBuilder.Build(),
-                TextOffsetX = -this[firstVisualCharacterIndex].Position.X - offsetAdjustX
             };
-
-            // cmd.TextOffsetX = 0;
 
 
             return cmd;
+        }
+
+        IEnumerator<ShapedGlyph> IEnumerable<ShapedGlyph>.GetEnumerator()
+        {
+            var startingIndex = 0;
+            var endingIndex = Glyphs.Length - 1;
+            for (int i = 0; i < endingIndex; i++)
+            {
+                yield return this[startingIndex + i];
+            }
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            // use the generic version
+            return ((IEnumerable<ShapedGlyph>)this).GetEnumerator();
         }
     }
 }

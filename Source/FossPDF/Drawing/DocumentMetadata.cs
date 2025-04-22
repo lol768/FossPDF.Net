@@ -8,7 +8,7 @@ namespace FossPDF.Drawing
         public int ImageQuality { get; set; } = 101;
         public int RasterDpi { get; set; } = 72;
         public bool PdfA { get; set; }
-        
+
         public string? Title { get; set; }
         public string? Author { get; set; }
         public string? Subject { get; set; }
@@ -32,7 +32,7 @@ namespace FossPDF.Drawing
             get => Settings.EnableCaching;
             set => Settings.EnableCaching = value;
         }
-        
+
         [Obsolete("This API has been moved since version 2022.9. Please use the FossPDF.Settings.EnableDebugging static property.")]
         public bool ApplyDebugging
         {

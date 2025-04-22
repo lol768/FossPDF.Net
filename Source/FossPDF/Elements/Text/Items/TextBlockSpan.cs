@@ -192,7 +192,7 @@ namespace FossPDF.Elements.Text.Items
 
             if (textDrawingCommand.HasValue)
             {
-                request.Canvas.DrawText(textDrawingCommand.Value.SkTextBlob, new Position(textDrawingCommand.Value.TextOffsetX, glyphOffsetY), Style, request.PageContext.FontManager);
+                request.Canvas.DrawText(textDrawingCommand.Value.SkTextBlob, new Position(0, glyphOffsetY), Style, request.PageContext.FontManager);
                 textDrawingCommand.Value.SkTextBlob.Dispose();
             }
 
