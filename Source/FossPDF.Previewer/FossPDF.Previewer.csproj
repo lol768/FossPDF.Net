@@ -4,7 +4,7 @@
         <Authors>MarcinZiabek</Authors>
         <Company>CodeFlint</Company>
         <PackageId>FossPDF.Previewer</PackageId>
-        <Version>2025.4.1</Version>
+        <Version>2025.4.2</Version>
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>FossPDF-previewer</ToolCommandName>
         <PackageDescription>FossPDF is a fork of QuestPDF at the last commit that was still FOSS. An open-source, modern and battle-tested library that can help you with generating PDF documents by offering friendly, discoverable and predictable C# fluent API.</PackageDescription>
