@@ -186,17 +186,13 @@ namespace FossPDF.Drawing
 
             if (StyleSets.TryGetValue(style.FontFamily, out var fontStyleSet))
             {
-                Console.WriteLine("Using font family " + style.FontFamily + " from StyleSets with weight " + weight + " and slant " + slant + " and style " + fontStyle);
                 return fontStyleSet.Match(fontStyle);
             }
-
-            Console.WriteLine("FALLBACK Using Default with weight " + weight + " and slant " + slant + " and style " + fontStyle);
 
             var fontFromDefaultSource = SKFontManager.Default.MatchFamily(style.FontFamily, fontStyle);
 
             if (fontFromDefaultSource != null)
             {
-                Console.WriteLine("Cannot be null?");
                 return fontFromDefaultSource;
             }
 
@@ -300,15 +296,6 @@ namespace FossPDF.Drawing
 
         public void DisposeAll(bool includeStyleSets=true)
         {
-            Console.WriteLine("Hello from DisposeAll");
-            // print number of FontPaints, Fonts, ShaperFonts, TextShapers etc
-            Console.WriteLine($"FontPaints: {FontPaints.Count}");
-            Console.WriteLine($"Fonts: {Fonts.Count}");
-            Console.WriteLine($"ShaperFonts: {ShaperFonts.Count}");
-            Console.WriteLine($"TextShapers: {TextShapers.Count}");
-            Console.WriteLine($"FontMetrics: {FontMetrics.Count}");
-            Console.WriteLine($"StyleSets: {StyleSets.Count}");
-
             foreach (var paint in FontPaints.Values)
             {
                 paint.Dispose();

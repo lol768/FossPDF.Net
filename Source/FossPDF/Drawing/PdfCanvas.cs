@@ -8,10 +8,10 @@ namespace FossPDF.Drawing
 {
     internal class PdfCanvas : SkiaDocumentCanvasBase
     {
-        public PdfCanvas(Stream stream, DocumentMetadata documentMetadata) 
+        public PdfCanvas(Stream stream, DocumentMetadata documentMetadata)
             : base(CreatePdf(stream, documentMetadata))
         {
-            
+
         }
 
         private static SKDocument CreatePdf(Stream stream, DocumentMetadata documentMetadata)
@@ -36,10 +36,10 @@ namespace FossPDF.Drawing
                 Keywords = metadata.Keywords,
                 Creator = metadata.Creator,
                 Producer = metadata.Producer,
-                
+
                 Creation = metadata.CreationDate,
                 Modified = metadata.ModifiedDate,
-                
+
                 RasterDpi = metadata.RasterDpi,
                 EncodingQuality = metadata.ImageQuality,
                 PdfA = metadata.PdfA

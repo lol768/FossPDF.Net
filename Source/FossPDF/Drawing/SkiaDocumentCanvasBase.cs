@@ -17,16 +17,16 @@ namespace FossPDF.Drawing
         {
             Document?.Dispose();
         }
-        
+
         public override void BeginDocument()
         {
-            
+
         }
 
         public override void EndDocument()
         {
             Canvas?.Dispose();
-            
+
             Document.Close();
             Document.Dispose();
         }
