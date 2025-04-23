@@ -7,7 +7,7 @@ namespace FossPDF.Drawing
 {
     internal abstract class SkiaCanvasBase : ICanvas, IRenderingCanvas
     {
-        internal SKCanvas Canvas { get; set; }
+        internal SKCanvas? Canvas { get; set; }
 
         public abstract void BeginDocument();
         public abstract void EndDocument();

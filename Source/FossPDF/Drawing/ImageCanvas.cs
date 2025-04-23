@@ -33,6 +33,7 @@ namespace FossPDF.Drawing
             var scalingFactor = Metadata.RasterDpi / (float) PageSizes.PointsPerInch;
             var imageInfo = new SKImageInfo((int) (size.Width * scalingFactor), (int) (size.Height * scalingFactor));
 
+            Surface?.Dispose();
             Surface = SKSurface.Create(imageInfo);
             Canvas = Surface.Canvas;
 
@@ -48,6 +49,7 @@ namespace FossPDF.Drawing
             Images.Add(image);
 
             Canvas.Dispose();
+            Canvas = null;
             Surface.Dispose();
         }
     }

@@ -51,6 +51,7 @@ namespace FossPDF.Drawing
                 Pictures.Add(new PreviewerPicture(picture, CurrentPageSize.Value));
 
             PictureRecorder?.Dispose();
+            Canvas?.Dispose();
             PictureRecorder = null;
         }
 

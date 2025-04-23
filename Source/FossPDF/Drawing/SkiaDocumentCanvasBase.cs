@@ -33,13 +33,15 @@ namespace FossPDF.Drawing
 
         public override void BeginPage(Size size)
         {
+            Canvas?.Dispose();
             Canvas = Document.BeginPage(size.Width, size.Height);
         }
 
         public override void EndPage()
         {
             Document.EndPage();
-            Canvas.Dispose();
+            Canvas?.Dispose();
+            Canvas = null;
         }
     }
 }
