@@ -1,3 +1,7 @@
+Version 2025.4.3:
+
+- Fixed: Further issues around line width calculations and interaction with wrapping. Made extent removal opt-in.
+
 Version 2025.4.2:
 
 - Fixed: Various issues around line width calculations and interaction with wrapping.
