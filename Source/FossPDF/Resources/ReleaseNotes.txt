@@ -1,3 +1,7 @@
+Version 2025.4.2:
+
+- Fixed: Various issues around line width calculations and interaction with wrapping.
+
 Version 2025.4.1:
 
 - Fixed: A number of issues where unmanaged memory wasn't being disposed properly.

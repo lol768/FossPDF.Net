@@ -164,7 +164,7 @@ namespace FossPDF.Drawing
             FontManager = fontManager;
         }
 
-        public int BreakText(int startIndex, float maxWidth)
+        public int BreakText(int startIndex, float maxWidth, bool removeExtents)
         {
             return Direction switch
             {
@@ -176,16 +176,24 @@ namespace FossPDF.Drawing
             int BreakTextLeftToRight()
             {
                 var index = startIndex;
-                maxWidth += Glyphs[startIndex].Position.X + (Glyphs[startIndex].LBearing ?? 0f);
+                maxWidth += Glyphs[startIndex].Position.X;
+                var leftAdjust = Glyphs[startIndex].LBearing ?? 0f;
 
                 while (index < Glyphs.Length)
                 {
                     var glyph = Glyphs[index];
-                    var leftAdjust = (index == startIndex ? (glyph.LBearing ?? 0f) : 0f);
-                    var rightAdjust = glyph.RBearing ?? 0f; // we won't know if we'll need this or not until we hit the end of the line
-                    if (glyph.Position.X + glyph.Width >
-                        maxWidth + Size.Epsilon)
+                    var rightAdjust = glyph.RBearing ?? 0f;
+                    var totalAdjust = 0f;
+                    if (removeExtents)
                     {
+                        totalAdjust += leftAdjust + rightAdjust;
+                    }
+                    if (glyph.Position.X + glyph.Width >
+                        maxWidth + Size.Epsilon + totalAdjust)
+                    {
+                        // Console.WriteLine("Glyph with ID " + glyph.Codepoint + " and index " + index + " at " + (glyph.Position.X + glyph.Width) +
+                        //                   " is too wide to fit in the available space (" + maxWidth + " plus " +
+                        //                   totalAdjust + " = " + (maxWidth + totalAdjust) + ")");
                         break;
                     }
 
@@ -203,11 +211,6 @@ namespace FossPDF.Drawing
 
                 while (index < Glyphs.Length)
                 {
-                    var glyph = Glyphs[index];
-                    var leftAdjust = glyph.LBearing ?? 0f; // we won't know if we'll need this or not until we hit the end of the line
-                    var rightAdjust = (index == Glyphs.Length-1 ? (glyph.RBearing ?? 0f) : 0f);
-
-
                     if (startOffset - this[index].Position.X > maxWidth + Size.Epsilon)
                         break;
 

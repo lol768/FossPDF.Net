@@ -88,7 +88,7 @@ namespace FossPDF.Elements.Text.Items
             }
 
             // start breaking text from requested position
-            var endIndex = TextShapingResult.BreakText(startIndex, request.AvailableWidth);
+            var endIndex = TextShapingResult.BreakText(startIndex, request.AvailableWidth, Style.RemoveExtents == true);
 
             if (endIndex < startIndex)
                 return null;
@@ -102,7 +102,7 @@ namespace FossPDF.Elements.Text.Items
             // measure final text
             var width = TextShapingResult.MeasureWidth(startIndex, wrappedText.Value.endIndex);
 
-            return new TextMeasurementResult
+            var result = new TextMeasurementResult
             {
                 Width = width.Width,
                 FirstGlyphBearing = width.FirstGlyphBearing,
@@ -118,6 +118,12 @@ namespace FossPDF.Elements.Text.Items
                 TotalIndex = TextShapingResult.Length - 1
             };
 
+            if (Style.RemoveExtents == true)
+            {
+                result.Width = width.Width - width.FirstGlyphBearing - width.LastGlyphBearing;
+            }
+
+            return result;
         }
 
         // TODO: consider introducing text wrapping abstraction (basic, english-like, asian-like)

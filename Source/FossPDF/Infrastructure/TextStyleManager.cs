@@ -19,9 +19,10 @@ namespace FossPDF.Infrastructure
         HasUnderline,
         WrapAnywhere,
         Fallback,
-        Direction
+        Direction,
+        RemoveExtents
     }
-    
+
     internal static class TextStyleManager
     {
         private static readonly ConcurrentDictionary<(TextStyle origin, TextStyleProperty property, object value), TextStyle> TextStyleMutateCache = new();
@@ -39,12 +40,12 @@ namespace FossPDF.Infrastructure
         {
             if (overrideValue && value == null)
                 return origin;
-            
+
             if (property == TextStyleProperty.Color)
             {
                 if (!overrideValue && origin.Color != null)
                     return origin;
-                
+
                 var castedValue = (string?)value;
 
                 if (origin.Color == castedValue)
@@ -52,53 +53,53 @@ namespace FossPDF.Infrastructure
 
                 return origin with { Color = castedValue };
             }
-            
+
             if (property == TextStyleProperty.BackgroundColor)
             {
                 if (!overrideValue && origin.BackgroundColor != null)
                     return origin;
-                
+
                 var castedValue = (string?)value;
-                
+
                 if (origin.BackgroundColor == castedValue)
                     return origin;
 
                 return origin with { BackgroundColor = castedValue };
             }
-            
+
             if (property == TextStyleProperty.FontFamily)
             {
                 if (!overrideValue && origin.FontFamily != null)
                     return origin;
-                
+
                 var castedValue = (string?)value;
-                
+
                 if (origin.FontFamily == castedValue)
                     return origin;
 
                 return origin with { FontFamily = castedValue };
             }
-            
+
             if (property == TextStyleProperty.Size)
             {
                 if (!overrideValue && origin.Size != null)
                     return origin;
-                
+
                 var castedValue = (float?)value;
-                
+
                 if (origin.Size == castedValue)
                     return origin;
 
                 return origin with { Size = castedValue };
             }
-            
+
             if (property == TextStyleProperty.LineHeight)
             {
                 if (!overrideValue && origin.LineHeight != null)
                     return origin;
-                
+
                 var castedValue = (float?)value;
-                
+
                 if (origin.LineHeight == castedValue)
                     return origin;
 
@@ -117,148 +118,161 @@ namespace FossPDF.Infrastructure
 
                 return origin with { LetterSpacing = castedValue };
             }
-            
+
             if (property == TextStyleProperty.FontWeight)
             {
                 if (!overrideValue && origin.FontWeight != null)
                     return origin;
-                
+
                 var castedValue = (FontWeight?)value;
-                
+
                 if (origin.FontWeight == castedValue)
                     return origin;
 
                 return origin with { FontWeight = castedValue };
             }
-            
+
             if (property == TextStyleProperty.FontPosition)
             {
                 if (!overrideValue && origin.FontPosition != null)
                     return origin;
-                
+
                 var castedValue = (FontPosition?)value;
-                
+
                 if (origin.FontPosition == castedValue)
                     return origin;
 
                 return origin with { FontPosition = castedValue };
             }
-            
+
             if (property == TextStyleProperty.IsItalic)
             {
                 if (!overrideValue && origin.IsItalic != null)
                     return origin;
-                
+
                 var castedValue = (bool?)value;
-                
+
                 if (origin.IsItalic == castedValue)
                     return origin;
 
                 return origin with { IsItalic = castedValue };
             }
-            
+
             if (property == TextStyleProperty.HasStrikethrough)
             {
                 if (!overrideValue && origin.HasStrikethrough != null)
                     return origin;
-                
+
                 var castedValue = (bool?)value;
-                
+
                 if (origin.HasStrikethrough == castedValue)
                     return origin;
 
                 return origin with { HasStrikethrough = castedValue };
             }
-            
+
             if (property == TextStyleProperty.HasUnderline)
             {
                 if (!overrideValue && origin.HasUnderline != null)
                     return origin;
-                
+
                 var castedValue = (bool?)value;
-                
+
                 if (origin.HasUnderline == castedValue)
                     return origin;
 
                 return origin with { HasUnderline = castedValue };
             }
-            
+
             if (property == TextStyleProperty.WrapAnywhere)
             {
                 if (!overrideValue && origin.WrapAnywhere != null)
                     return origin;
 
                 var castedValue = (bool?)value;
-                
+
                 if (origin.WrapAnywhere == castedValue)
                     return origin;
-                
+
                 return origin with { WrapAnywhere = castedValue };
             }
-            
+
             if (property == TextStyleProperty.Fallback)
             {
                 if (!overrideValue && origin.Fallback != null)
                     return origin;
 
                 var castedValue = (TextStyle?)value;
-                
+
                 if (origin.Fallback == castedValue)
                     return origin;
-                
+
                 return origin with { Fallback = castedValue };
             }
-            
+
             if (property == TextStyleProperty.Direction)
             {
                 if (!overrideValue && origin.Direction != null)
                     return origin;
 
                 var castedValue = (TextDirection?)value;
-                
+
                 if (origin.Direction == castedValue)
                     return origin;
-                
+
                 return origin with { Direction = castedValue };
+            }
+
+            if (property == TextStyleProperty.RemoveExtents)
+            {
+                if (!overrideValue && origin.RemoveExtents != null)
+                    return origin;
+
+                var castedValue = (bool?)value;
+
+                if (origin.RemoveExtents == castedValue)
+                    return origin;
+
+                return origin with { RemoveExtents = castedValue };
             }
 
             throw new ArgumentOutOfRangeException(nameof(property), property, "Expected to mutate the TextStyle object. Provided property type is not supported.");
         }
-        
+
         internal static TextStyle ApplyInheritedStyle(this TextStyle style, TextStyle parent)
         {
             var cacheKey = (style, parent);
             return TextStyleApplyInheritedCache.GetOrAdd(cacheKey, key => key.origin.ApplyStyleProperties(key.parent, overrideStyle: false, overrideFontFamily: false, applyFallback: true).UpdateFontFallback(overrideStyle: true));
         }
-        
+
         internal static TextStyle ApplyGlobalStyle(this TextStyle style)
         {
             return TextStyleApplyGlobalCache.GetOrAdd(style, key => key.ApplyStyleProperties(TextStyle.LibraryDefault, overrideStyle: false, overrideFontFamily: false, applyFallback: true).UpdateFontFallback(overrideStyle: false));
         }
-        
+
         private static TextStyle UpdateFontFallback(this TextStyle style, bool overrideStyle)
         {
             var targetFallbackStyle = style
                 ?.Fallback
                 ?.ApplyStyleProperties(style, overrideStyle: overrideStyle, overrideFontFamily: false, applyFallback: false)
                 ?.UpdateFontFallback(overrideStyle);
-            
+
             return style.MutateStyle(TextStyleProperty.Fallback, targetFallbackStyle, overrideValue: true);
         }
-        
+
         internal static TextStyle OverrideStyle(this TextStyle style, TextStyle parent)
         {
             var cacheKey = (style, parent);
             return TextStyleOverrideCache.GetOrAdd(cacheKey, key => ApplyStyleProperties(key.origin, key.parent, overrideStyle: true, overrideFontFamily: true, applyFallback: true));
         }
-        
+
         private static TextStyle ApplyStyleProperties(this TextStyle style, TextStyle parent, bool overrideStyle, bool overrideFontFamily, bool applyFallback)
         {
             var result = style;
-            
+
             if (string.IsNullOrWhiteSpace(result.FontFamily) || overrideFontFamily)
                 result = MutateStyle(result, TextStyleProperty.FontFamily, parent.FontFamily, overrideStyle);
-                
+
             result = MutateStyle(result, TextStyleProperty.Color, parent.Color, overrideStyle);
             result = MutateStyle(result, TextStyleProperty.BackgroundColor, parent.BackgroundColor, overrideStyle);
             result = MutateStyle(result, TextStyleProperty.Size, parent.Size, overrideStyle);
@@ -271,7 +285,8 @@ namespace FossPDF.Infrastructure
             result = MutateStyle(result, TextStyleProperty.HasUnderline, parent.HasUnderline, overrideStyle);
             result = MutateStyle(result, TextStyleProperty.WrapAnywhere, parent.WrapAnywhere, overrideStyle);
             result = MutateStyle(result, TextStyleProperty.Direction, parent.Direction, overrideStyle);
-            
+            result = MutateStyle(result, TextStyleProperty.RemoveExtents, parent.RemoveExtents, overrideStyle);
+
             if (applyFallback)
                 result = MutateStyle(result, TextStyleProperty.Fallback, parent.Fallback, overrideStyle);
 

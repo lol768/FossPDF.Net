@@ -17,6 +17,7 @@ namespace FossPDF.Infrastructure
         internal bool? HasStrikethrough { get; set; }
         internal bool? HasUnderline { get; set; }
         internal bool? WrapAnywhere { get; set; }
+        internal bool? RemoveExtents { get; set; }
         internal TextDirection? Direction { get; set; }
 
         internal TextStyle? Fallback { get; set; }
@@ -36,7 +37,8 @@ namespace FossPDF.Infrastructure
             HasUnderline = false,
             WrapAnywhere = false,
             Direction = TextDirection.Auto,
-            Fallback = null
+            Fallback = null,
+            RemoveExtents = false
         };
 
         public static TextStyle Default { get; } = new();

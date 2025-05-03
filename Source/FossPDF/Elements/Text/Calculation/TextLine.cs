@@ -40,8 +40,7 @@ namespace FossPDF.Elements.Text.Calculation
                 Ascent = elements.Min(x => x.Measurement.Ascent) - (lineHeight - textHeight) / 2,
                 Descent = elements.Max(x => x.Measurement.Descent) + (lineHeight - textHeight) / 2,
 
-                Width = elements.Sum(x => x.Measurement.Width) - elements.First().Measurement.FirstGlyphBearing
-                                                               + elements.Last().Measurement.LastGlyphBearing
+                Width = elements.Sum(x => x.Measurement.Width)
             };
         }
     }
