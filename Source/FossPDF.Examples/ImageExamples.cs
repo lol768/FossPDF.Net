@@ -24,18 +24,18 @@ namespace FossPDF.Examples
                     page.Padding(25).Column(column =>
                     {
                         column.Spacing(25);
-                        
+
                         column.Item().Image("logo.png");
 
                         var binaryData = File.ReadAllBytes("logo.png");
                         column.Item().Image(binaryData);
-                        
+
                         using var stream = new FileStream("logo.png", FileMode.Open);
                         column.Item().Image(stream);
                     });
                 });
         }
-        
+
         [Test]
         public void DynamicImage()
         {
@@ -50,26 +50,30 @@ namespace FossPDF.Examples
                         .Image(Placeholders.Image);
                 });
         }
-        
+
         [Test]
         public void SharedImage()
         {
-            RenderingTest
-                .Create()
-                .PageSize(450, 350)
-                .ProducePdf()
-                .ShowResults()
-                .Render(page =>
-                {
-                    page.Column(column =>
+            using (var image = Image.FromBinaryData(Placeholders.Image(200, 100)))
+            {
+                RenderingTest
+                    .Create()
+                    .PageSize(450, 350)
+                    .ProducePdf()
+                    .ShowResults()
+                    .Render(page =>
                     {
-                        var image = Image.FromBinaryData(Placeholders.Image(200, 100));
-                        column.Item().Image(image);
-                        column.Item().Image(image);
+                        page.Column(column =>
+                        {
+                            // This is safe because the image is disposed after the rendering is done
+                            // ReSharper disable AccessToDisposedClosure
+                            column.Item().Image(image);
+                            column.Item().Image(image);
+                        });
                     });
-                });
+            }
         }
-        
+
         [Test]
         public void Exception()
         {
@@ -83,20 +87,20 @@ namespace FossPDF.Examples
                     .Render(page => page.Image("non_existent.png"));
             });
         }
-        
+
         [Test]
         public void ReusingTheSameImageFileShouldBePossible()
         {
             var fileName = Path.GetTempFileName() + ".jpg";
-            
+
             try
             {
                 var image = Placeholders.Image(300, 100);
-                
+
                 using var file = File.Create(fileName);
                 file.Write(image);
                 file.Dispose();
-                
+
                 RenderingTest
                     .Create()
                     .ProducePdf()
@@ -109,7 +113,7 @@ namespace FossPDF.Examples
                             .Column(column =>
                             {
                                 column.Spacing(20);
-                                
+
                                 column.Item().Image(fileName);
                                 column.Item().Image(fileName);
                                 column.Item().Image(fileName);

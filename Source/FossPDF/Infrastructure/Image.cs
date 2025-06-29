@@ -13,22 +13,25 @@ public class Image : IDisposable
         SkImage = image;
     }
 
-    public void Dispose() { }
-    
+    public void Dispose()
+    {
+        SkImage.Dispose();
+    }
+
     public static Image FromBinaryData(byte[] imageBytes)
     {
         var skImage = SKImage.FromEncodedData(imageBytes);
         var createdImage = new Image(skImage);
         return createdImage;
     }
-    
+
     public static Image FromFile(string filePath)
     {
         var skImage = SKImage.FromEncodedData(filePath);
         var createdImage = new Image(skImage);
         return createdImage;
     }
-    
+
     public static Image FromStream(Stream stream)
     {
         var skImage = SKImage.FromEncodedData(stream);
