@@ -15,7 +15,7 @@ namespace FossPDF.UnitTests
         public void Measure_TakesAvailableSpaceRegardlessOfSize()
         {
             TestPlan
-                .For(x => new Image
+                .For(x => new Elements.Image
                 {
                     InternalImage = GenerateImage(400, 300)
                 })
@@ -27,7 +27,7 @@ namespace FossPDF.UnitTests
         public void Draw_TakesAvailableSpaceRegardlessOfSize()
         {
             TestPlan
-                .For(x => new Image
+                .For(x => new Elements.Image
                 {
                     InternalImage = GenerateImage(400, 300)
                 })

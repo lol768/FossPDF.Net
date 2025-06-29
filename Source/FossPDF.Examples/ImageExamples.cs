@@ -5,6 +5,7 @@ using FossPDF.Drawing.Exceptions;
 using FossPDF.Examples.Engine;
 using FossPDF.Fluent;
 using FossPDF.Helpers;
+using FossPDF.Infrastructure;
 
 namespace FossPDF.Examples
 {
@@ -47,6 +48,25 @@ namespace FossPDF.Examples
                 {
                     page.Padding(25)
                         .Image(Placeholders.Image);
+                });
+        }
+        
+        [Test]
+        public void SharedImage()
+        {
+            RenderingTest
+                .Create()
+                .PageSize(450, 350)
+                .ProducePdf()
+                .ShowResults()
+                .Render(page =>
+                {
+                    page.Column(column =>
+                    {
+                        var image = Image.FromBinaryData(Placeholders.Image(200, 100));
+                        column.Item().Image(image);
+                        column.Item().Image(image);
+                    });
                 });
         }
         

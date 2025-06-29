@@ -26,13 +26,18 @@ namespace FossPDF.Fluent
             var image = SKImage.FromEncodedData(fileStream);
             parent.Image(image, scaling);
         }
+
+        public static void Image(this IContainer parent, Infrastructure.Image image, ImageScaling scaling = ImageScaling.FitWidth)
+        {
+            parent.Image(image.SkImage, scaling);
+        }
         
         private static void Image(this IContainer parent, SKImage image, ImageScaling scaling = ImageScaling.FitWidth)
         {
             if (image == null)
                 throw new DocumentComposeException("Cannot load or decode provided image.");
             
-            var imageElement = new Image
+            var imageElement = new Elements.Image
             {
                 InternalImage = image
             };
