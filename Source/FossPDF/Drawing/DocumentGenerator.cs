@@ -59,7 +59,7 @@ namespace FossPDF.Drawing
 
         internal static ICollection<string> GenerateSvg(IDocument document)
         {
-            var canvas = new SvgCanvas();
+            using var canvas = new SvgCanvas();
             RenderDocument(canvas, document);
 
             return canvas.Images;
@@ -67,7 +67,7 @@ namespace FossPDF.Drawing
 
         internal static ICollection<PreviewerPicture> GeneratePreviewerPictures(IDocument document)
         {
-            var canvas = new SkiaPictureCanvas();
+            using var canvas = new SkiaPictureCanvas();
             RenderDocument(canvas, document);
             return canvas.Pictures;
         }

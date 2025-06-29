@@ -9,7 +9,7 @@ namespace FossPDF.Drawing
 {
     internal sealed class SvgCanvas : SkiaCanvasBase, IDisposable
     {
-        internal MemoryStream? Stream { get; set; } = null;
+        private MemoryStream? Stream { get; set; }
         internal ICollection<string> Images { get; } = new List<string>();
 
         public SvgCanvas()
@@ -37,6 +37,7 @@ namespace FossPDF.Drawing
         {
             Stream?.Dispose();
             Stream = new MemoryStream();
+            Canvas?.Dispose(); // belt and braces
             Canvas = SKSvgCanvas.Create(SKRect.Create(size.Width, size.Height), Stream);
         }
 
