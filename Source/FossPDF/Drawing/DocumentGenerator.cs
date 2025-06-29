@@ -57,6 +57,14 @@ namespace FossPDF.Drawing
             return canvas.Images;
         }
 
+        internal static ICollection<string> GenerateSvg(IDocument document)
+        {
+            var canvas = new SvgCanvas();
+            RenderDocument(canvas, document);
+
+            return canvas.Images;
+        }
+
         internal static ICollection<PreviewerPicture> GeneratePreviewerPictures(IDocument document)
         {
             var canvas = new SkiaPictureCanvas();

@@ -77,5 +77,31 @@ namespace FossPDF.Fluent
         }
 
         #endregion
+
+        #region SVG
+
+        public static IEnumerable<string> GenerateSvg(this IDocument document)
+        {
+            return DocumentGenerator.GenerateSvg(document);
+        }
+
+        /// <param name="filePath">Method should return fileName for given index</param>
+        public static void GenerateSvg(this IDocument document, Func<int, string> filePath)
+        {
+            var index = 0;
+
+            foreach (var svgString in document.GenerateSvg())
+            {
+                var path = filePath(index);
+
+                if (File.Exists(path))
+                    File.Delete(path);
+
+                File.WriteAllText(path, svgString);
+                index++;
+            }
+        }
+
+        #endregion
     }
 }
