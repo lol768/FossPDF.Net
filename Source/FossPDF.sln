@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FossPDF.Previewer", "FossPD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FossPDF.PlatformUtils", "FossPDF.PlatformUtils\FossPDF.PlatformUtils.csproj", "{628338C9-6B48-42D9-ADF2-FB97C91BCFBC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FossPDF.FontSubset", "FossPDF.FontSubset\FossPDF.FontSubset.csproj", "{41883758-330A-4683-B1F5-8F97CD18B950}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,5 +55,9 @@ Global
 		{628338C9-6B48-42D9-ADF2-FB97C91BCFBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{628338C9-6B48-42D9-ADF2-FB97C91BCFBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{628338C9-6B48-42D9-ADF2-FB97C91BCFBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41883758-330A-4683-B1F5-8F97CD18B950}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41883758-330A-4683-B1F5-8F97CD18B950}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41883758-330A-4683-B1F5-8F97CD18B950}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41883758-330A-4683-B1F5-8F97CD18B950}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
