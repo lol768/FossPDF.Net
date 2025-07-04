@@ -1,3 +1,9 @@
+Version 2025.7.1:
+
+- Feature: Shared images
+- Feature: SVG output
+- Feature: C# HarfBuzz subsetter bindings
+
 Version 2025.4.3:
 
 - Fixed: Further issues around line width calculations and interaction with wrapping. Made extent removal opt-in.
