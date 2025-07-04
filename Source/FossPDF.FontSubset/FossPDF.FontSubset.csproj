@@ -5,11 +5,17 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Version>2025.7.1</Version>
+        <PackageReadmeFile>PackageReadme.md</PackageReadmeFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="SkiaSharp.HarfBuzz" Version="3.119.0-preview.1.2" />
         <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="Resources\PackageReadme.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 </Project>
