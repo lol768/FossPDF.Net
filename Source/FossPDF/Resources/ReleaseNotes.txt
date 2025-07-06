@@ -1,3 +1,7 @@
+Version 2025.7.2:
+
+- Feature: QoL improvements for the subsetting API
+
 Version 2025.7.1:
 
 - Feature: Shared images
