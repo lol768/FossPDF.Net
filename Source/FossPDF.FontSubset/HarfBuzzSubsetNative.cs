@@ -33,4 +33,8 @@ internal static partial class HarfBuzzSubsetNative
     internal static partial hb_blob_t hb_face_reference_blob(hb_face_t face);
 
     [LibraryImport(HARFBUZZ)]
-    internal static partial void hb_subset_input_destroy(hb_subset_input_t input);}
+    internal static partial void hb_subset_input_destroy(hb_subset_input_t input);
+
+    [LibraryImport(HARFBUZZ)]
+    internal static partial hb_face_t hb_font_get_face(IntPtr font);
+}

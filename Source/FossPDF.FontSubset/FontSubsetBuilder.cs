@@ -4,12 +4,22 @@ namespace FossPDF.FontSubset;
 
 public class FontSubsetBuilder
 {
-    private Face? _face;
+    private IntPtr _faceHandle;
     private readonly HashSet<uint> _glyphCodepoints = [];
+
+    public FontSubsetBuilder SetFont(Font font)
+    {
+        var face = HarfBuzzSubsetNative.hb_font_get_face(font.Handle);
+        if (face == IntPtr.Zero)
+            throw new SubsetException("Failed to get face from font.");
+
+        _faceHandle = face;
+        return this;
+    }
 
     public FontSubsetBuilder SetFace(Face face)
     {
-        _face = face;
+        _faceHandle = face.Handle;
         return this;
     }
 
@@ -35,7 +45,7 @@ public class FontSubsetBuilder
 
     public byte[] Build()
     {
-        if (_face == null)
+        if (_faceHandle == IntPtr.Zero)
             throw new SubsetException("Face must be set before building subset.");
 
         var subsetInput = HarfBuzzSubsetNative.hb_subset_input_create_or_fail();
@@ -51,7 +61,7 @@ public class FontSubsetBuilder
             foreach (var codepoint in _glyphCodepoints)
                 HarfBuzzSubsetNative.hb_set_add(glyphSet, codepoint);
 
-            var subsetFacePtr = HarfBuzzSubsetNative.hb_subset_or_fail(_face.Handle, subsetInput);
+            var subsetFacePtr = HarfBuzzSubsetNative.hb_subset_or_fail(_faceHandle, subsetInput);
             if (subsetFacePtr == IntPtr.Zero)
                 throw new SubsetException("Failed to subset the face.");
 

@@ -97,13 +97,18 @@ namespace FossPDF.Drawing
             // interrogate all TextBlockSpans
             var allMyFuckingGlyphs = new Dictionary<Font, HashSet<uint>>();
             var typeFaceToGlyphs = new Dictionary<SKTypeface, HashSet<uint>>();
+            var typeFaceToShaperFont = new Dictionary<SKTypeface, Font>();
 
             content.VisitChildren(el =>
             {
-                ProcessElementPrepareForSubsetting(el, allMyFuckingGlyphs, typeFaceToGlyphs, pageContext.FontManager);
+                ProcessElementPrepareForSubsetting(el, allMyFuckingGlyphs, typeFaceToGlyphs, typeFaceToShaperFont, pageContext.FontManager);
             });
 
-            var reqs = typeFaceToGlyphs.Select(entry => new FontToBeSubset { Glyphs = entry.Value, Typeface = entry.Key }).ToList();
+            var reqs = typeFaceToGlyphs.Select(entry => new FontToBeSubset
+            {
+                Glyphs = entry.Value, Typeface = entry.Key,
+                ShaperFont = typeFaceToShaperFont[entry.Key]
+            }).ToList();
             pageContext.FontManager.FireSubsetCallback(reqs);
             RenderPass(pageContext, new FreeCanvas(), content, debuggingState);
 
@@ -111,8 +116,10 @@ namespace FossPDF.Drawing
             pageContext.FontManager.DisposeAll();
         }
 
-        private static void ProcessElementPrepareForSubsetting(Element? el, IDictionary<Font, HashSet<uint>> allMyFuckingGlyphs,
-            IDictionary<SKTypeface, HashSet<uint>> typeFaceToGlyphs, DocumentSpecificFontManager fontManager)
+        private static void ProcessElementPrepareForSubsetting(Element? el,
+            IDictionary<Font, HashSet<uint>> allMyFuckingGlyphs,
+            IDictionary<SKTypeface, HashSet<uint>> typeFaceToGlyphs, Dictionary<SKTypeface, Font> typeFaceToShaperFont,
+            DocumentSpecificFontManager fontManager)
         {
             if (el is DynamicHost dh)
             {
@@ -120,7 +127,7 @@ namespace FossPDF.Drawing
                 // inside them and use the TextBlocks cached on the DynamicHost
                 foreach (var textBlock in dh.GetTextBlocks())
                 {
-                    ProcessElementPrepareForSubsetting(textBlock, allMyFuckingGlyphs, typeFaceToGlyphs, fontManager);
+                    ProcessElementPrepareForSubsetting(textBlock, allMyFuckingGlyphs, typeFaceToGlyphs, typeFaceToShaperFont, fontManager);
                 }
             }
             if (el is not TextBlock tb) return;
@@ -131,6 +138,7 @@ namespace FossPDF.Drawing
                 if (glyphCodepoints == null) continue;
 
                 var shaperFont = fontManager.ToShaperFont(span.Style);
+                typeFaceToShaperFont[fontManager.ToFont(span.Style).Typeface] = shaperFont;
                 var existingList = allMyFuckingGlyphs.TryGetValue(shaperFont, out var glyphList)
                     ? glyphList
                     : new HashSet<uint>();

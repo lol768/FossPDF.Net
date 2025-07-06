@@ -4,10 +4,12 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>2025.7.1</Version>
+        <Version>2025.7.2</Version>
         <PackageReadmeFile>PackageReadme.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <!-- WE WANT AN EXE -->
+        <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
